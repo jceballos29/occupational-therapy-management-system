@@ -50,6 +50,22 @@ enum AuthorizationStatus {
   EXPIRED
 }
 
+enum DocumentType {
+  CC  // Cédula de Ciudadanía
+  CE  // Cédula de Extranjería
+  CD  // Carné Diplomático
+  PA  // Pasaporte
+  SC  // Salvoconducto
+  PE  // Permiso Especial de Permanencia
+  PT  // Permiso por Protección Temporal
+  RC  // Registro Civil
+  TI  // Tarjeta de Identidad
+  CN  // Certificado de Nacido Vivo
+  AS  // Adulto Sin Identificación
+  MS  // Menor Sin Identificación
+  DE  // Documento Extranjero
+}
+
 // ---------------------------------------------------------
 // MODELOS
 // ---------------------------------------------------------
@@ -96,6 +112,7 @@ model Insurer {
 
 model Patient {
   id             String      @id @default(cuid())
+  documentType   DocumentType @default(CC)
   documentId     String      @unique
   firstName      String
   lastName       String

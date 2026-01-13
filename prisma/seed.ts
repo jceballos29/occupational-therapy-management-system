@@ -1,4 +1,4 @@
-import { PrismaClient, UserRole, PatientType, AuthorizationStatus, } from "../lib/generated/prisma/client";
+import { PrismaClient, UserRole, PatientType, AuthorizationStatus, DocumentType, } from "../lib/generated/prisma/client";
 import { PrismaPg } from '@prisma/adapter-pg'
 import 'dotenv/config'
 
@@ -98,24 +98,28 @@ async function main() {
   })
 
   // 5. PACIENTES
-  const patientsData = [
+const patientsData = [
     { 
-      name: 'Pepito', last: 'Copago', doc: '111', 
+      name: 'Pepito', last: 'Copago', 
+      doc: '111222', docType: DocumentType.TI, // Correcto
       type: PatientType.INSURANCE_COPAY, insurer: sura.id,
       auth: { total: 10, used: 2 } 
     },
     { 
-      name: 'Anita', last: 'Paquete', doc: '222', 
+      name: 'Anita', last: 'Paquete', 
+      doc: '555666', docType: DocumentType.CC, // Correcto
       type: PatientType.INSURANCE_PACKAGE, insurer: sura.id,
       auth: { total: 20, used: 5 } 
     },
     { 
-      name: 'Carlos', last: 'Plata', doc: '333', 
+      name: 'Carlos', last: 'Extranjero', 
+      doc: 'E-555999', docType: DocumentType.CE, // <--- CAMBIO: Usamos CE o PA
       type: PatientType.PRIVATE, insurer: null,
       auth: null
     },
     { 
-      name: 'Rogelio', last: 'Arl', doc: '444', 
+      name: 'Rogelio', last: 'Veneco', 
+      doc: '999888', docType: DocumentType.PT, // <--- CAMBIO: Probamos el Permiso Temporal
       type: PatientType.INSURANCE_PACKAGE, insurer: bolivar.id,
       auth: { total: 5, used: 0 }
     }
