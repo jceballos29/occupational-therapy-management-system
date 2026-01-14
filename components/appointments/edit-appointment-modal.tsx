@@ -183,6 +183,29 @@ export function EditAppointmentModal({
                 </FormItem>
               )} />
 
+              {/* Duración */}
+              <FormField control={form.control} name="duration" render={({ field: { value, onChange, ...field } }) => (
+                <FormItem>
+                  <FormLabel>Duración (min)</FormLabel>
+                  <Select onValueChange={(val) => onChange(parseInt(val))} value={value?.toString()}>
+                    <FormControl>
+                      <SelectTrigger className="w-full">
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="30">30 min</SelectItem>
+                      <SelectItem value="45">45 min</SelectItem>
+                      <SelectItem value="60">60 min</SelectItem>
+                      <SelectItem value="90">90 min</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
               {/* Precio */}
               <FormField control={form.control} name="price" render={({ field: { value, onChange, ...field } }) => (
                 <FormItem>
@@ -203,7 +226,8 @@ export function EditAppointmentModal({
                 </FormItem>
               )} />
 
-              {patientType === 'INSURANCE_COPAY' && (
+              {/* Copago - Mostrar para COPAY y PACKAGE */}
+              {(patientType === 'INSURANCE_COPAY' || patientType === 'INSURANCE_PACKAGE') && (
                 <FormField control={form.control} name="copayAmount" render={({ field: { value, onChange, ...field } }) => (
                   <FormItem>
                     <FormLabel className="text-blue-600">Copago Paciente</FormLabel>
@@ -225,7 +249,7 @@ export function EditAppointmentModal({
               )}
             </div>
 
-            {patientType === 'INSURANCE_COPAY' && (
+            {(patientType === 'INSURANCE_COPAY' || patientType === 'INSURANCE_PACKAGE') && (
               <div className="text-xs text-muted-foreground bg-slate-50 p-2 rounded border">
                 <p>La aseguradora pagará: <strong>
                   ${((form.watch("price") || 0) - (form.watch("copayAmount") || 0)).toLocaleString()}

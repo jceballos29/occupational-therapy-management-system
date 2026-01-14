@@ -6,8 +6,22 @@ export const patientFormSchema = z.object({
   firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   lastName: z.string().min(2, "El apellido debe tener al menos 2 caracteres"),
   
-  documentType: z.enum(DocumentType, {
-    error: "Selecciona un tipo de documento" 
+  documentType: z.enum([
+    DocumentType.CC,
+    DocumentType.CE,
+    DocumentType.CD,
+    DocumentType.PA,
+    DocumentType.SC,
+    DocumentType.PE,
+    DocumentType.PT,
+    DocumentType.RC,
+    DocumentType.TI,
+    DocumentType.CN,
+    DocumentType.AS,
+    DocumentType.MS,
+    DocumentType.DE,
+  ], {
+    message: "Selecciona un tipo de documento" 
   }),
   documentId: z.string().min(3, "El número de documento es requerido"),
   
@@ -15,11 +29,11 @@ export const patientFormSchema = z.object({
   phone: z.string().min(7, "Teléfono requerido"),
   
   birthDate: z.date({
-    error: "La fecha de nacimiento es requerida",
+    message: "La fecha de nacimiento es requerida",
   }),
   
-  type: z.enum(PatientType, {
-    error: "Selecciona un tipo de afiliación",
+  type: z.enum([PatientType.PRIVATE, PatientType.INSURANCE_COPAY, PatientType.INSURANCE_PACKAGE], {
+    message: "Selecciona un tipo de afiliación",
   }),
   
   // Relaciones
