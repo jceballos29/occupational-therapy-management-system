@@ -1,10 +1,9 @@
-import { Suspense } from "react"
-import { getPatients } from "@/lib/queries/patients"
-import { columns } from "./columns"
 import { DataTable } from "@/components/data-table"
 import { Button } from "@/components/ui/button"
+import { getPatients } from "@/lib/queries/patients"
 import { PlusCircle, Users } from "lucide-react"
 import Link from "next/link"
+import { columns } from "./columns"
 
 export default async function PatientsPage() {
   // Llamada al Server Action

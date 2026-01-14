@@ -47,24 +47,24 @@ export const columns: ColumnDef<PatientWithRelations>[] = [
       )
     }
   },
-  {
-    accessorKey: "email",
-    header: "Email",
-    cell: ({ row }) => (
-      <span className="text-sm text-slate-600">
-        {row.original.email || <span className="text-slate-400 italic">No proporcionado</span>}
-      </span>
-    )
-  },
-  {
-    accessorKey: "birthDate",
-    header: "Fecha de Nacimiento",
-    cell: ({ row }) => (
-      <span className="text-sm text-slate-600">
-        {format(row.original.birthDate, "PPP", { locale: es })}
-      </span>
-    )
-  },
+  // {
+  //   accessorKey: "email",
+  //   header: "Email",
+  //   cell: ({ row }) => (
+  //     <span className="text-sm text-slate-600">
+  //       {row.original.email || <span className="text-slate-400 italic">No proporcionado</span>}
+  //     </span>
+  //   )
+  // },
+  // {
+  //   accessorKey: "birthDate",
+  //   header: "Fecha de Nacimiento",
+  //   cell: ({ row }) => (
+  //     <span className="text-sm text-slate-600">
+  //       {format(row.original.birthDate, "PPP", { locale: es })}
+  //     </span>
+  //   )
+  // },
   {
     accessorKey: "documentType",
     header: "Tipo",

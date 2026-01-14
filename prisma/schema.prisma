@@ -24,6 +24,12 @@ enum UserRole {
   SECRETARY
 }
 
+enum AppointmentType {
+  FIRST_TIME   // Primera vez
+  EVALUATION   // Evaluación
+  FOLLOW_UP    // Seguimiento
+}
+
 enum AppointmentStatus {
   SCHEDULED
   COMPLETED
@@ -182,6 +188,7 @@ model Appointment {
   
   startTime DateTime
   endTime   DateTime 
+  type      AppointmentType @default(FOLLOW_UP)
   status    AppointmentStatus @default(SCHEDULED)
   notes     String?
 

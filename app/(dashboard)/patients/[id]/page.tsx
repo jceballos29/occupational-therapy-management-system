@@ -1,40 +1,71 @@
-import { getPatientById } from "@/lib/queries/patients"
-import { notFound } from "next/navigation"
+import { AddAppointmentModal } from "@/components/appointments/add-appointment-modal"
+import { AppointmentsTableWrapper } from "@/components/appointments/appointments-table-wrapper"
+import { AddAuthorizationModal } from "@/components/patients/add-authorization-modal"
+import { AuthorizationItem } from "@/components/patients/authorization-item"
+import { EditPatientModal } from "@/components/patients/edit-patient-modal"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Calendar, CreditCard, Edit, FileText, Phone, User, ShieldCheck, UserIcon, IdCard, Mail, Shield } from "lucide-react"
-import Link from "next/link"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { DOCUMENT_TYPE_COLORS, DOCUMENT_TYPES_MAP, patientTypeColors, patientTypeLabels } from "@/config/constants"
-import { DocumentType } from "@/lib/generated/prisma/enums"
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger
 } from "@/components/ui/tooltip"
-
+import { DOCUMENT_TYPE_COLORS, DOCUMENT_TYPES_MAP, patientTypeColors, patientTypeLabels } from "@/config/constants"
+import prisma from "@/lib/prisma"
+import { getPatientById } from "@/lib/queries/patients"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
+import { ArrowLeft, Calendar, CalendarPlus2, Edit, IdCard, Mail, Phone, Shield, ShieldCheck, User } from "lucide-react"
+import Link from "next/link"
+import { notFound } from "next/navigation"
 
 interface PageProps {
   params: Promise<{ id: string }>
 }
 
+const formatCurrency = (value: number) => {
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency',
+    currency: 'COP',
+    minimumFractionDigits: 0
+  }).format(value)
+}
+
 export default async function PatientProfilePage({ params }: PageProps) {
   // En Next.js 15+ params es una promesa, hay que esperarla
   const { id } = await params
-  const { data: patient, success } = await getPatientById(id)
+  const { data, success } = await getPatientById(id)
 
-  if (!success || !patient) {
+  const [insurers, doctors] = await Promise.all([
+    prisma.insurer.findMany({
+      where: { active: true },
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' }
+    }),
+    prisma.doctor.findMany({
+      where: { active: true },
+      select: { id: true, firstName: true, lastName: true },
+      orderBy: { lastName: 'asc' }
+    })
+  ])
+
+  if (!success || !data?.patient) {
     notFound()
   }
 
-  // Cálculos rápidos para el UI
+  const { patient, stats } = data
+
+  // Lógica de Negocio
+  const isPrivate = patient.type === 'PRIVATE'
   const activeAuth = patient.authorizations.find(a => a.status === 'ACTIVE')
   const sessionsLeft = activeAuth ? activeAuth.totalSessions - activeAuth.usedSessions : 0
+
+  // Totales
+  const totalAssisted = stats?._count.id || 0
+  const totalPaid = Number(stats?._sum.priceTotal || 0)
 
   return (
     <div className="space-y-6">
@@ -53,10 +84,15 @@ export default async function PatientProfilePage({ params }: PageProps) {
               Volver a Pacientes
             </Link>
           </Button>
-          <Button>
+          {/* <Button>
             <Edit className="mr-2 h-4 w-4" />
             Editar
-          </Button>
+          </Button> */}
+          <EditPatientModal
+            patient={patient}
+            insurers={insurers}
+            doctors={doctors}
+          />
         </div>
       </div>
 
@@ -179,40 +215,57 @@ export default async function PatientProfilePage({ params }: PageProps) {
         </div>
 
         {/* COLUMNA DERECHA: Área de Trabajo (Autorizaciones y Citas) */}
-        <div className="md:col-span-2">
-          <Tabs defaultValue="authorizations" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="authorizations">Autorizaciones / Paquetes</TabsTrigger>
-              <TabsTrigger value="history">Historial de Citas</TabsTrigger>
+        <div className="md:col-span-2 space-y-6">
+          <div className="grid grid-cols-2 gap-4">
+            <Card className={isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""}>
+              <CardHeader>
+                <CardDescription className="font-medium">Sesiones Disponibles</CardDescription>
+                <CardTitle className="text-lg truncate">{
+                  isPrivate ? "---" : sessionsLeft
+                }</CardTitle>
+              </CardHeader>
+            </Card>
+            <Card className={isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""}>
+              <CardHeader>
+                <CardDescription className="font-medium">Autorización Activa</CardDescription>
+                <CardTitle className="text-lg truncate">
+                  {activeAuth ? activeAuth.code : "---"}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription className="font-medium">Sesiones Asisitidas</CardDescription>
+                <CardTitle className="text-lg truncate">
+                  {totalAssisted}
+                </CardTitle>
+              </CardHeader>
+            </Card>
+            <Card>
+              <CardHeader>
+                <CardDescription className="font-medium">Valor Total</CardDescription>
+                <CardTitle className="text-lg truncate">{totalPaid}</CardTitle>
+              </CardHeader>
+            </Card>
+          </div>
+
+          <Tabs defaultValue={isPrivate ? "history" : "authorizations"} className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="authorizations" disabled={isPrivate}>Autorizaciones</TabsTrigger>
+              <TabsTrigger value="history">Citas</TabsTrigger>
             </TabsList>
 
             {/* TAB: AUTORIZACIONES */}
             <TabsContent value="authorizations" className="space-y-4 mt-4">
-              {/* Tarjeta de Resumen de Saldo */}
-              {patient.type !== 'PRIVATE' && (
-                <div className="grid grid-cols-2 gap-4">
-                  <Card >
-                    <CardHeader className="pb-2">
-                      <CardDescription >Sesiones Disponibles</CardDescription>
-                      <CardTitle className="text-3xl">{sessionsLeft}</CardTitle>
-                    </CardHeader>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardDescription>Autorización Activa</CardDescription>
-                      <CardTitle className="text-lg truncate">
-                        {activeAuth ? activeAuth.code : "Ninguna"}
-                      </CardTitle>
-                    </CardHeader>
-                  </Card>
-                </div>
-              )}
 
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Historial de Autorizaciones</h3>
-                <Button size="sm">
-                  <CreditCard className="mr-2 h-4 w-4" /> Nueva Autorización
-                </Button>
+                <AddAuthorizationModal
+                  patientId={patient.id}
+                  insurerId={patient.insurerId}
+                  insurerName={patient.insurer?.name}
+                  hasActiveAuth={!!activeAuth}
+                />
               </div>
 
               {/* Lista de Autorizaciones */}
@@ -225,31 +278,7 @@ export default async function PatientProfilePage({ params }: PageProps) {
                   ) : (
                     <div className="divide-y">
                       {patient.authorizations.map((auth) => (
-                        <div key={auth.id} className="p-4 flex justify-between items-center">
-                          <div>
-                            <p className="font-medium text-sm">Cód: {auth.code}</p>
-                            <p className="text-xs text-muted-foreground">
-                              Vence: {format(auth.validUntil, "dd/MM/yyyy")}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="text-xs font-medium">
-                                {auth.usedSessions} / {auth.totalSessions}
-                              </span>
-                              <Badge variant={auth.status === 'ACTIVE' ? 'default' : 'secondary'}>
-                                {auth.status}
-                              </Badge>
-                            </div>
-                            {/* Barra de progreso visual simple */}
-                            <div className="w-24 h-1.5 bg-slate-100 rounded-full ml-auto overflow-hidden">
-                              <div
-                                className="h-full bg-blue-600"
-                                style={{ width: `${(auth.usedSessions / auth.totalSessions) * 100}%` }}
-                              />
-                            </div>
-                          </div>
-                        </div>
+                        <AuthorizationItem key={auth.id} auth={auth} />
                       ))}
                     </div>
                   )}
@@ -258,18 +287,24 @@ export default async function PatientProfilePage({ params }: PageProps) {
             </TabsContent>
 
             {/* TAB: HISTORIAL */}
-            <TabsContent value="history" className="mt-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Últimas Sesiones</CardTitle>
-                  <CardDescription>Mostrando las últimas 5 citas registradas</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="p-4 text-center text-muted-foreground text-sm border-dashed border-2 rounded-lg">
-                    Aquí se listarán las citas cuando integremos el módulo de Agenda.
-                  </div>
-                </CardContent>
-              </Card>
+            <TabsContent value="history" className="space-y-4 mt-4">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-medium">Historial de Citas</h3>
+                {/* 
+                <Button size="sm" disabled>
+                  <CalendarPlus2 className="mr-2 h-4 w-4" /> Nueva Cita
+                </Button> */}
+                <AddAppointmentModal
+                  patientId={patient.id}
+                  patientType={patient.type}
+                  doctors={doctors}
+                />
+              </div>
+              <AppointmentsTableWrapper
+                appointments={patient.appointments}
+                doctors={doctors}
+                patientType={patient.type}
+              />
             </TabsContent>
           </Tabs>
         </div>

@@ -1,6 +1,5 @@
-import prisma from "@/lib/prisma"
 import { PatientForm } from "@/components/patients/patient-form"
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb"
+import prisma from "@/lib/prisma"
 import { UserPlus } from "lucide-react"
 
 export default async function NewPatientPage() {
@@ -19,8 +18,8 @@ export default async function NewPatientPage() {
 
   return (
     <div className="space-y-6">
-        {/* Breadcrumb de navegación */}
-        {/* <Breadcrumb>
+      {/* Breadcrumb de navegación */}
+      {/* <Breadcrumb>
             <BreadcrumbList>
                 <BreadcrumbItem>
                     <BreadcrumbLink href="/patients">Pacientes</BreadcrumbLink>
@@ -32,7 +31,7 @@ export default async function NewPatientPage() {
             </BreadcrumbList>
         </Breadcrumb> */}
 
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
             <UserPlus className="h-6 w-6 text-slate-600" />
@@ -42,18 +41,8 @@ export default async function NewPatientPage() {
             Ingresa los datos personales y de afiliación del paciente.
           </p>
         </div>
-        {/* <Button>
-          <Link href="/patients/new" className="flex items-center">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Nuevo Paciente
-          </Link>
-        </Button> */}
       </div>
-
-        {/* <div className="bg-white rounded-xl border shadow-sm p-6 max-w-4xl"> */}
-        
-            <PatientForm insurers={insurers} doctors={doctors} />
-        {/* </div> */}
+      <PatientForm insurers={insurers} doctors={doctors} />
     </div>
   )
 }

@@ -30,10 +30,10 @@ export async function getPatientById(id: string) {
         insurer: true,
         treatingDoctor: true,
         authorizations: {
-          orderBy: { createdAt: 'desc' } // Las más recientes primero
+          orderBy: { createdAt: 'desc' }
         },
         appointments: {
-          take: 5, // Solo las últimas 5 citas para el historial rápido
+          // take: 5, // Seguimos trayendo solo 5 para la lista visual
           orderBy: { startTime: 'desc' },
           include: { doctor: true }
         }
@@ -41,8 +41,37 @@ export async function getPatientById(id: string) {
     })
     
     if (!patient) return { success: false, error: "Paciente no encontrado" }
+
+    // NUEVO: Calculamos estadísticas históricas
+    const stats = await prisma.appointment.aggregate({
+      where: { 
+        patientId: id,
+        status: 'COMPLETED' // Solo contamos las completadas
+      },
+      _count: { id: true },
+      _sum: { priceTotal: true }
+    })
     
-    return { success: true, data: patient }
+    // Convertir Decimales a números para evitar problemas de serialización
+    const serializedPatient = {
+      ...patient,
+      appointments: patient.appointments.map(appointment => ({
+        ...appointment,
+        // Convertir strings de fecha a objetos Date
+        startTime: new Date(appointment.startTime),
+        endTime: new Date(appointment.endTime),
+        createdAt: new Date(appointment.createdAt),
+        updatedAt: new Date(appointment.updatedAt),
+        // Convertir Decimales a números
+        priceTotal: appointment.priceTotal ? Number(appointment.priceTotal) : null,
+        priceCopay: appointment.priceCopay ? Number(appointment.priceCopay) : null,
+        priceInsurer: appointment.priceInsurer ? Number(appointment.priceInsurer) : null,
+      }))
+    }
+    
+    // Devolvemos el paciente serializado y las estadísticas por separado
+    return { success: true, data: { patient: serializedPatient, stats } }
+
   } catch (error) {
     console.error("Error fetching patient:", error)
     return { success: false, error: "Error de servidor" }

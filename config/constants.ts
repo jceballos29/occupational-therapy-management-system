@@ -1,4 +1,4 @@
-import { DocumentType } from "@/lib/generated/prisma/enums"
+import { AppointmentStatus, AppointmentType, DocumentType } from "@/lib/generated/prisma/enums"
 
 export const DOCUMENT_TYPES_MAP: Record<DocumentType, string> = {
   CC: "Cédula de Ciudadanía",
@@ -52,4 +52,26 @@ export const patientTypeColors: Record<string, string> = {
   PRIVATE: "bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100",
   INSURANCE_COPAY: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
   INSURANCE_PACKAGE: "bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100"
+}
+
+export const APPOINTMENT_TYPES_MAP: Record<AppointmentType, string> = {
+  FIRST_TIME: "Primera Vez",
+  EVALUATION: "Evaluación",
+  FOLLOW_UP: "Seguimiento",
+}
+
+// Mapeo de colores basado EXACTAMENTE en tu Schema
+export const statusStyles: Record<AppointmentStatus, string> = {
+  SCHEDULED: "bg-blue-100 text-blue-800 border-blue-200", // Antes era CONFIRMED
+  COMPLETED: "bg-green-100 text-green-800 border-green-200",
+  CANCELLED: "bg-red-100 text-red-800 border-red-200",
+  NO_SHOW: "bg-slate-100 text-slate-800 border-slate-200", // No asistió
+}
+
+// Diccionario para traducir los estados a español visualmente
+export const statusLabels: Record<AppointmentStatus, string> = {
+  SCHEDULED: "Agendada",
+  COMPLETED: "Asistida",
+  CANCELLED: "Cancelada",
+  NO_SHOW: "No Asistió"
 }
