@@ -42,7 +42,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }
 
   return (
-    <Sidebar variant="floating" collapsible="icon" {...props}>
+    <Sidebar variant="inset" collapsible="icon" {...props}>
       {/* 1. HEADER: Logo y Marca */}
       <SidebarHeader>
         <SidebarMenu>

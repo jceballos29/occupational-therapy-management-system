@@ -21,7 +21,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -36,7 +35,6 @@ import {
   ChevronsRight,
   X,
 } from "lucide-react";
-import { APPOINTMENT_TYPES_MAP } from "@/config/constants"; // <--- Importamos el mapa
 import { cn } from "@/lib/utils";
 
 interface DataTableProps<TData, TValue> {
@@ -44,11 +42,13 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
 }
 
-export function AppointmentsDataTable<TData, TValue>({
+export function AuthorizationsDataTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    { id: "validUntil", desc: false }, // Ordenar por fecha de vencimiento por defecto
+  ]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
@@ -71,46 +71,40 @@ export function AppointmentsDataTable<TData, TValue>({
     },
   });
 
-  // Función auxiliar para generar números de página
-  // Esto crea un array tipo [0, 1, 2] para mapear botones
   const pageCount = table.getPageCount();
   const pageIndex = table.getState().pagination.pageIndex;
   const pageNumbers = Array.from({ length: pageCount }, (_, i) => i);
 
-  // Lógica para no mostrar 100 botones si hay muchas páginas (Muestra ventana de 5)
   const visiblePages = pageNumbers.filter(
     (p) => p >= pageIndex - 2 && p <= pageIndex + 2
   );
 
   return (
     <div className="space-y-4">
-      {/* 1. FILTROS AVANZADOS */}
+      {/* FILTROS */}
       <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        {/* Filtro por Tipo de Cita (Select en vez de Input) */}
         <div className="flex items-center gap-2">
           <Select
             value={
-              (table.getColumn("type")?.getFilterValue() as string) ?? "ALL"
+              (table.getColumn("status")?.getFilterValue() as string) ?? "ALL"
             }
             onValueChange={(value) => {
-              if (value === "ALL") table.getColumn("type")?.setFilterValue("");
-              else table.getColumn("type")?.setFilterValue(value);
+              if (value === "ALL")
+                table.getColumn("status")?.setFilterValue("");
+              else table.getColumn("status")?.setFilterValue(value);
             }}
           >
             <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Tipo de cita" />
+              <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="ALL">Todos los tipos</SelectItem>
-              {Object.entries(APPOINTMENT_TYPES_MAP).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
+              <SelectItem value="ALL">Todos los estados</SelectItem>
+              <SelectItem value="ACTIVE">Activa</SelectItem>
+              <SelectItem value="COMPLETED">Completada</SelectItem>
+              <SelectItem value="EXPIRED">Vencida</SelectItem>
             </SelectContent>
           </Select>
 
-          {/* Botón para limpiar filtros si hay alguno activo */}
           {columnFilters.length > 0 && (
             <Button
               variant="ghost"
@@ -122,12 +116,9 @@ export function AppointmentsDataTable<TData, TValue>({
             </Button>
           )}
         </div>
-
-        {/* Buscador Global (Opcional, busca en todas las columnas visibles si configuras filterFn) */}
-        {/* <Input ... /> */}
       </div>
 
-      {/* 2. TABLA */}
+      {/* TABLA */}
       <div className="rounded-md border bg-white overflow-hidden">
         <Table>
           <TableHeader className="bg-slate-50">
@@ -137,8 +128,8 @@ export function AppointmentsDataTable<TData, TValue>({
                   <TableHead
                     key={header.id}
                     className={cn(
-                      header.column.id === "actions" && "w-8",
-                      header.column.id === "select" && "w-10",
+                      header.column.id === 'actions' && 'w-8',
+                      header.column.id === 'select' && 'w-10',
                       "font-semibold text-slate-700"
                     )}
                   >
@@ -177,7 +168,7 @@ export function AppointmentsDataTable<TData, TValue>({
                   colSpan={columns.length}
                   className="h-32 text-center text-muted-foreground"
                 >
-                  No se encontraron resultados.
+                  No se encontraron autorizaciones.
                 </TableCell>
               </TableRow>
             )}
@@ -185,9 +176,8 @@ export function AppointmentsDataTable<TData, TValue>({
         </Table>
       </div>
 
-      {/* 3. PAGINACIÓN PROFESIONAL */}
+      {/* PAGINACIÓN */}
       <div className="flex items-center justify-between px-2">
-        {/* Selector de filas por página */}
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium text-muted-foreground">Filas:</p>
           <Select
@@ -209,7 +199,6 @@ export function AppointmentsDataTable<TData, TValue>({
           </Select>
         </div>
 
-        {/* Información de página y Botones numéricos */}
         <div className="flex items-center gap-2">
           <div className="w-[100px] items-center justify-center text-sm font-medium text-muted-foreground hidden sm:flex">
             Pág {table.getState().pagination.pageIndex + 1} de{" "}
@@ -236,7 +225,6 @@ export function AppointmentsDataTable<TData, TValue>({
               <ChevronLeft className="h-4 w-4" />
             </Button>
 
-            {/* Renderizado de Números de Página */}
             {visiblePages.map((pageNum) => (
               <Button
                 key={pageNum}

@@ -60,6 +60,12 @@ export const APPOINTMENT_TYPES_MAP: Record<AppointmentType, string> = {
   FOLLOW_UP: "Seguimiento",
 }
 
+export const appointmentTypeColors: Record<AppointmentType, string> = {
+  FIRST_TIME: "bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-100",
+  EVALUATION: "bg-blue-100 text-blue-800 border-blue-200 hover:bg-blue-100",
+  FOLLOW_UP: "bg-purple-100 text-purple-800 border-purple-200 hover:bg-purple-100"
+}
+
 // Mapeo de colores basado EXACTAMENTE en tu Schema
 export const statusStyles: Record<AppointmentStatus, string> = {
   SCHEDULED: "bg-blue-100 text-blue-800 border-blue-200", // Antes era CONFIRMED

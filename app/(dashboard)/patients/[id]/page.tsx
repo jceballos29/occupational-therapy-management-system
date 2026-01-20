@@ -1,74 +1,99 @@
-import { AddAppointmentModal } from "@/components/appointments/add-appointment-modal"
-import { AppointmentsTableWrapper } from "@/components/appointments/appointments-table-wrapper"
-import { AddAuthorizationModal } from "@/components/patients/add-authorization-modal"
-import { AuthorizationItem } from "@/components/patients/authorization-item"
-import { EditPatientModal } from "@/components/patients/edit-patient-modal"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { AddAppointmentModal } from "@/components/appointments/add-appointment-modal";
+import { AppointmentsTableWrapper } from "@/components/appointments/appointments-table-wrapper";
+import { AddAuthorizationModal } from "@/components/authorizations/add-authorization-modal";
+import { AuthorizationsTableWrapper } from "@/components/authorizations/authorizations-table-wrapper";
+import { EditPatientModal } from "@/components/patients/edit-patient-modal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
-  TooltipTrigger
-} from "@/components/ui/tooltip"
-import { DOCUMENT_TYPE_COLORS, DOCUMENT_TYPES_MAP, patientTypeColors, patientTypeLabels } from "@/config/constants"
-import prisma from "@/lib/prisma"
-import { getPatientById } from "@/lib/queries/patients"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { ArrowLeft, Calendar, CalendarPlus2, Edit, IdCard, Mail, Phone, Shield, ShieldCheck, User } from "lucide-react"
-import Link from "next/link"
-import { notFound } from "next/navigation"
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  DOCUMENT_TYPE_COLORS,
+  DOCUMENT_TYPES_MAP,
+  patientTypeColors,
+  patientTypeLabels,
+} from "@/config/constants";
+import prisma from "@/lib/prisma";
+import { getPatientById } from "@/lib/queries/patients";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import {
+  ArrowLeft,
+  Calendar,
+  CalendarPlus2,
+  Edit,
+  IdCard,
+  Mail,
+  Phone,
+  Shield,
+  ShieldCheck,
+  User,
+} from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 
 interface PageProps {
-  params: Promise<{ id: string }>
+  params: Promise<{ id: string }>;
 }
 
 const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('es-CO', {
-    style: 'currency',
-    currency: 'COP',
-    minimumFractionDigits: 0
-  }).format(value)
-}
+  return new Intl.NumberFormat("es-CO", {
+    style: "currency",
+    currency: "COP",
+    minimumFractionDigits: 0,
+  }).format(value);
+};
 
 export default async function PatientProfilePage({ params }: PageProps) {
   // En Next.js 15+ params es una promesa, hay que esperarla
-  const { id } = await params
-  const { data, success } = await getPatientById(id)
+  const { id } = await params;
+  const { data, success } = await getPatientById(id);
 
   const [insurers, doctors] = await Promise.all([
     prisma.insurer.findMany({
       where: { active: true },
       select: { id: true, name: true },
-      orderBy: { name: 'asc' }
+      orderBy: { name: "asc" },
     }),
     prisma.doctor.findMany({
       where: { active: true },
       select: { id: true, firstName: true, lastName: true },
-      orderBy: { lastName: 'asc' }
-    })
-  ])
+      orderBy: { lastName: "asc" },
+    }),
+  ]);
 
   if (!success || !data?.patient) {
-    notFound()
+    notFound();
   }
 
-  const { patient, stats } = data
+  const { patient, stats } = data;
 
   // Lógica de Negocio
-  const isPrivate = patient.type === 'PRIVATE'
-  const activeAuth = patient.authorizations.find(a => a.status === 'ACTIVE')
-  const sessionsLeft = activeAuth ? activeAuth.totalSessions - activeAuth.usedSessions : 0
+  const isPrivate = patient.type === "PRIVATE";
+  const activeAuth = patient.authorizations.find((a) => a.status === "ACTIVE");
+  const sessionsLeft = activeAuth
+    ? activeAuth.totalSessions - activeAuth.usedSessions
+    : 0;
 
   // Totales
-  const totalAssisted = stats?._count.id || 0
-  const totalPaid = Number(stats?._sum.priceTotal || 0)
+  const totalAssisted = stats?._count.id || 0;
+  const totalPaid = Number(stats?._sum.priceTotal || 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-8">
       {/* 1. Header de Navegación */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -98,7 +123,6 @@ export default async function PatientProfilePage({ params }: PageProps) {
 
       {/* 2. Contenido Principal */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-
         {/* COLUMNA IZQUIERDA: Información Fija */}
         <div className="space-y-6">
           {/* Tarjeta de Contacto */}
@@ -128,7 +152,10 @@ export default async function PatientProfilePage({ params }: PageProps) {
                       <TooltipTrigger asChild>
                         <Badge
                           variant="outline"
-                          className={` flex items-center justify-center leading-none font-mono text-[10px] px-2 py-0.5 cursor-help ${DOCUMENT_TYPE_COLORS[patient.documentType] || "bg-slate-100"}`}
+                          className={` flex items-center justify-center leading-none font-mono text-[10px] px-2 py-0.5 cursor-help ${
+                            DOCUMENT_TYPE_COLORS[patient.documentType] ||
+                            "bg-slate-100"
+                          }`}
                         >
                           {patient.documentType}
                         </Badge>
@@ -145,9 +172,7 @@ export default async function PatientProfilePage({ params }: PageProps) {
                   <Phone className="h-4 w-4 text-muted-foreground" />
                   <p className="font-medium">Teléfono</p>
                 </div>
-                <p className="text-muted-foreground">
-                  {patient.phone}
-                </p>
+                <p className="text-muted-foreground">{patient.phone}</p>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -155,7 +180,7 @@ export default async function PatientProfilePage({ params }: PageProps) {
                   <p className="font-medium">Email</p>
                 </div>
                 <p className="text-muted-foreground">
-                  {patient.email || 'Sin email'}
+                  {patient.email || "Sin email"}
                 </p>
               </div>
               <div className="flex items-center justify-between">
@@ -182,7 +207,7 @@ export default async function PatientProfilePage({ params }: PageProps) {
                   <p className="font-medium">Aseguradora</p>
                 </div>
                 <p className="text-muted-foreground">
-                  {patient.insurer ? patient.insurer.name : 'Sin Aseguradora'}
+                  {patient.insurer ? patient.insurer.name : "Sin Aseguradora"}
                 </p>
               </div>
               <div className="flex items-center justify-between">
@@ -190,44 +215,61 @@ export default async function PatientProfilePage({ params }: PageProps) {
                   <ShieldCheck className="h-4 w-4 text-muted-foreground" />
                   <p className="font-medium">Afiliación</p>
                 </div>
-                <Badge className={patientTypeColors[patient.type]} variant="outline">
+                <Badge
+                  className={patientTypeColors[patient.type]}
+                  variant="outline"
+                >
                   {patientTypeLabels[patient.type] || patient.type}
                 </Badge>
               </div>
-              {
-                patient.treatingDoctor && (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div
-                        className="w-4 h-4 rounded-full"
-                        style={{ backgroundColor: patient.treatingDoctor.colorCode || 'gray' }}
-                      />
-                      <p className="font-medium">Médico Tratante</p>
-                    </div>
-                    <p className="text-muted-foreground">
-                      Dr. {patient.treatingDoctor.firstName} {patient.treatingDoctor.lastName}
-                    </p>
+              {patient.treatingDoctor && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-4 h-4 rounded-full"
+                      style={{
+                        backgroundColor:
+                          patient.treatingDoctor.colorCode || "gray",
+                      }}
+                    />
+                    <p className="font-medium">Médico Tratante</p>
                   </div>
-                )
-              }
+                  <p className="text-muted-foreground">
+                    Dr. {patient.treatingDoctor.firstName}{" "}
+                    {patient.treatingDoctor.lastName}
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
 
         {/* COLUMNA DERECHA: Área de Trabajo (Autorizaciones y Citas) */}
         <div className="md:col-span-2 space-y-6">
-          <div className="grid grid-cols-2 gap-4">
-            <Card className={isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""}>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Card
+              className={
+                isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""
+              }
+            >
               <CardHeader>
-                <CardDescription className="font-medium">Sesiones Disponibles</CardDescription>
-                <CardTitle className="text-lg truncate">{
-                  isPrivate ? "---" : sessionsLeft
-                }</CardTitle>
+                <CardDescription className="font-medium">
+                  Sesiones Disponibles
+                </CardDescription>
+                <CardTitle className="text-lg truncate">
+                  {isPrivate ? "---" : sessionsLeft}
+                </CardTitle>
               </CardHeader>
             </Card>
-            <Card className={isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""}>
+            <Card
+              className={
+                isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""
+              }
+            >
               <CardHeader>
-                <CardDescription className="font-medium">Autorización Activa</CardDescription>
+                <CardDescription className="font-medium">
+                  Autorización Activa
+                </CardDescription>
                 <CardTitle className="text-lg truncate">
                   {activeAuth ? activeAuth.code : "---"}
                 </CardTitle>
@@ -235,7 +277,9 @@ export default async function PatientProfilePage({ params }: PageProps) {
             </Card>
             <Card>
               <CardHeader>
-                <CardDescription className="font-medium">Sesiones Asisitidas</CardDescription>
+                <CardDescription className="font-medium">
+                  Sesiones Asistidas
+                </CardDescription>
                 <CardTitle className="text-lg truncate">
                   {totalAssisted}
                 </CardTitle>
@@ -243,23 +287,29 @@ export default async function PatientProfilePage({ params }: PageProps) {
             </Card>
             <Card>
               <CardHeader>
-                <CardDescription className="font-medium">Valor Total</CardDescription>
+                <CardDescription className="font-medium">
+                  Valor Total
+                </CardDescription>
                 <CardTitle className="text-lg truncate">{totalPaid}</CardTitle>
               </CardHeader>
             </Card>
           </div>
 
-          <Tabs defaultValue={isPrivate ? "history" : "authorizations"} className="w-full">
+          <Tabs
+            defaultValue={isPrivate ? "history" : "authorizations"}
+            className="w-full"
+          >
             <TabsList className="w-full">
-              <TabsTrigger value="authorizations" disabled={isPrivate}>Autorizaciones</TabsTrigger>
+              <TabsTrigger value="authorizations" disabled={isPrivate}>
+                Autorizaciones
+              </TabsTrigger>
               <TabsTrigger value="history">Citas</TabsTrigger>
             </TabsList>
-
-            {/* TAB: AUTORIZACIONES */}
             <TabsContent value="authorizations" className="space-y-4 mt-4">
-
               <div className="flex justify-between items-center">
-                <h3 className="text-lg font-medium">Historial de Autorizaciones</h3>
+                <h3 className="text-lg font-medium">
+                  Historial de Autorizaciones
+                </h3>
                 <AddAuthorizationModal
                   patientId={patient.id}
                   insurerId={patient.insurerId}
@@ -267,33 +317,19 @@ export default async function PatientProfilePage({ params }: PageProps) {
                   hasActiveAuth={!!activeAuth}
                 />
               </div>
-
-              {/* Lista de Autorizaciones */}
-              <Card>
-                <CardContent className="p-0">
-                  {patient.authorizations.length === 0 ? (
-                    <div className="p-6 text-center text-muted-foreground text-sm">
-                      No hay autorizaciones registradas.
-                    </div>
-                  ) : (
-                    <div className="divide-y">
-                      {patient.authorizations.map((auth) => (
-                        <AuthorizationItem key={auth.id} auth={auth} />
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
+              {patient.authorizations.length === 0 ? (
+                <div className="p-6 text-center text-muted-foreground text-sm">
+                  No hay autorizaciones registradas.
+                </div>
+              ) : (
+                <AuthorizationsTableWrapper
+                  authorizations={patient.authorizations}
+                />
+              )}
             </TabsContent>
-
-            {/* TAB: HISTORIAL */}
             <TabsContent value="history" className="space-y-4 mt-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-medium">Historial de Citas</h3>
-                {/* 
-                <Button size="sm" disabled>
-                  <CalendarPlus2 className="mr-2 h-4 w-4" /> Nueva Cita
-                </Button> */}
                 <AddAppointmentModal
                   patientId={patient.id}
                   patientType={patient.type}
@@ -310,5 +346,5 @@ export default async function PatientProfilePage({ params }: PageProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
