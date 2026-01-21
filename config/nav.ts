@@ -21,9 +21,12 @@ export const navLinks = [
     href: "/billing",
     icon: CreditCard,
   },
+]
+
+export const secondaryNavLinks = [
   {
     title: "Configuración",
-    href: "/config/insurers",
+    href: "/config",
     icon: Settings,
   },
 ]

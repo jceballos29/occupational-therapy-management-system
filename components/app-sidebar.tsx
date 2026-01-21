@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { navLinks } from "@/config/nav" // Usamos tu config existente
+import { navLinks, secondaryNavLinks } from "@/config/nav" // Usamos tu config existente
 import { NavUser } from "./nav-user"
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -78,12 +78,12 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             ))}
           </SidebarMenu>
         </SidebarGroup>
-        <SidebarGroup>
+        <SidebarGroup className="mt-auto">
           <SidebarMenu className="gap-2">
-            {navLinks.map((item) => (
+            {secondaryNavLinks.map((item) => (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild tooltip={item.title} isActive={pathname === item.href}>
-                  <Link href={item.href}>
+                  <Link href={item.href} className="text-muted-foreground">
                     <item.icon />
                     <span>{item.title}</span>
                   </Link>
