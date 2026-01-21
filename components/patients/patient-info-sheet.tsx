@@ -2,7 +2,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -65,7 +65,7 @@ export function PatientInfoSheet({
           Ver Información
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto px-4">
+      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
         <SheetHeader>
           <SheetTitle>Información del Paciente</SheetTitle>
           <SheetDescription>
@@ -73,13 +73,11 @@ export function PatientInfoSheet({
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-6 py-4">
-          {/* Datos Personales Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Datos Personales</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+        <div className="space-y-4 p-4">
+          {/* Datos Personales Section */}
+          <div>
+            <h3 className="text-base font-semibold mb-4">Datos Personales</h3>
+            <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <User className="h-4 w-4 text-muted-foreground" />
@@ -141,15 +139,15 @@ export function PatientInfoSheet({
                   {format(patient.birthDate, "PPP", { locale: es })}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          {/* Afiliación Clínica Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Afiliación Clínica</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2 text-sm">
+          <Separator />
+
+          {/* Afiliación Clínica Section */}
+          <div>
+            <h3 className="text-base font-semibold mb-4">Afiliación Clínica</h3>
+            <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Shield className="h-4 w-4 text-muted-foreground" />
@@ -189,16 +187,23 @@ export function PatientInfoSheet({
                   </p>
                 </div>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </div>
 
-        <SheetFooter>
+        <SheetFooter className="flex-col gap-2 sm:flex-col">
           <EditPatientModal
             patient={patient}
             insurers={insurers}
             doctors={doctors}
           />
+          <Button
+            variant="outline"
+            onClick={() => setOpen(false)}
+            className="w-full"
+          >
+            Cerrar
+          </Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

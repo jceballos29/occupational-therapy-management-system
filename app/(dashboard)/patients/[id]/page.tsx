@@ -63,11 +63,6 @@ export default async function PatientProfilePage({ params }: PageProps) {
               insurers={insurers}
               doctors={doctors}
             />
-            <EditPatientModal
-              patient={patient}
-              insurers={insurers}
-              doctors={doctors}
-            />
           </>
         }
       />
