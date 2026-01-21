@@ -72,7 +72,7 @@ export function AddAppointmentModal({ patientId, patientType, doctors }: AddAppo
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button size="sm">
-          <CalendarPlus2 className="mr-2 h-4 w-4" /> Nueva Cita
+          <CalendarPlus2 className="h-4 w-4" /> Nueva Cita
         </Button>
       </DialogTrigger>
       <DialogContent>

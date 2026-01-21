@@ -30,7 +30,7 @@ export default function DashboardLayout({
     >
       <AppSidebar />
       <SidebarInset>
-          <header className="sticky top-0 z-10 flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
+          <header className="flex h-(--header-height) shrink-0 items-center gap-2 border-b transition-[width,height] ease-linear group-has-data-[collapsible=icon]/sidebar-wrapper:h-(--header-height)">
             <div className="flex items-center gap-2 px-4">
               <SidebarTrigger className="-ml-1" />
               <Separator
@@ -53,9 +53,15 @@ export default function DashboardLayout({
             </div>
           </header>
           {/*  CONTENT */}
-          <div className="grow flex flex-1 flex-col gap-4 p-4 md:p-4 md:pt-4 min-h-[calc(100vh-4rem)]">
-            {children}
+          <div className="flex flex-1 flex-col">
+            <div className="@container/main flex flex-1 flex-col gap-2">
+            
+              {children}
+            
+            </div>
           </div>
+          {/* <div className="grow flex flex-1 flex-col gap-4 p-4 md:p-4 md:pt-4 min-h-[calc(100vh-4rem)]">
+          </div> */}
       </SidebarInset>
     </SidebarProvider>
   );

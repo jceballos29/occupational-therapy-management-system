@@ -50,7 +50,7 @@ export function AuthorizationsDataTable<TData, TValue>({
     { id: "validUntil", desc: false }, // Ordenar por fecha de vencimiento por defecto
   ]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -76,7 +76,7 @@ export function AuthorizationsDataTable<TData, TValue>({
   const pageNumbers = Array.from({ length: pageCount }, (_, i) => i);
 
   const visiblePages = pageNumbers.filter(
-    (p) => p >= pageIndex - 2 && p <= pageIndex + 2
+    (p) => p >= pageIndex - 2 && p <= pageIndex + 2,
   );
 
   return (
@@ -128,16 +128,16 @@ export function AuthorizationsDataTable<TData, TValue>({
                   <TableHead
                     key={header.id}
                     className={cn(
-                      header.column.id === 'actions' && 'w-8',
-                      header.column.id === 'select' && 'w-10',
-                      "font-semibold text-slate-700"
+                      header.column.id === "actions" && "w-8",
+                      header.column.id === "select" && "w-10",
+                      "font-semibold text-slate-700",
                     )}
                   >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -156,7 +156,7 @@ export function AuthorizationsDataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

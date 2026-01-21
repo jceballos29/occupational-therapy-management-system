@@ -1,24 +1,23 @@
-"use client"
+"use client";
 
-import { useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { CalendarIcon, Loader2, Save, Edit } from "lucide-react"
-import { toast } from "sonner"
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { CalendarIcon, Loader2, Save, Edit } from "lucide-react";
+import { toast } from "sonner";
 
-
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-  DialogDescription
-} from "@/components/ui/dialog"
+  DialogDescription,
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -26,34 +25,43 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+  FormDescription,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
-import { patientFormSchema, PatientFormValues } from "@/lib/schemas/patient"
-import { updatePatient } from "@/lib/actions/patients"
-import { DOCUMENT_TYPES_MAP } from "@/config/constants"
-import { Patient, PatientType } from "@/lib/generated/prisma/browser"
+import { patientFormSchema, PatientFormValues } from "@/lib/schemas/patient";
+import { updatePatient } from "@/lib/actions/patients";
+import { DOCUMENT_TYPES_MAP } from "@/config/constants";
+import { Patient, PatientType } from "@/lib/generated/prisma/browser";
 
+import type { DoctorListItem, InsurerListItem } from "@/types/patient";
 
 interface EditPatientModalProps {
-  patient: Patient
-  insurers: { id: string; name: string }[]
-  doctors: { id: string; firstName: string; lastName: string }[]
+  patient: Patient;
+  insurers: InsurerListItem[];
+  doctors: DoctorListItem[];
 }
 
-export function EditPatientModal({ patient, insurers, doctors }: EditPatientModalProps) {
-  const [open, setOpen] = useState(false)
-  const [isPending, startTransition] = useTransition()
+export function EditPatientModal({
+  patient,
+  insurers,
+  doctors,
+}: EditPatientModalProps) {
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientFormSchema),
@@ -69,28 +77,28 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
       insurerId: patient.insurerId || "",
       treatingDoctorId: patient.treatingDoctorId || "",
     },
-  })
+  });
 
   // Watch para lógica condicional (igual que en creación)
-  const selectedType = form.watch("type")
+  const selectedType = form.watch("type");
 
   async function onSubmit(data: PatientFormValues) {
     startTransition(async () => {
-      const result = await updatePatient(patient.id, data)
+      const result = await updatePatient(patient.id, data);
       if (result.success) {
-        toast.success("Paciente actualizado correctamente")
-        setOpen(false)
+        toast.success("Paciente actualizado correctamente");
+        setOpen(false);
       } else {
-        toast.error(result.error)
+        toast.error(result.error);
       }
-    })
+    });
   }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Edit className="mr-2 h-4 w-4" />
+        <Button size="sm">
+          <Edit className="h-4 w-4" />
           Editar
         </Button>
       </DialogTrigger>
@@ -98,13 +106,16 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
         <DialogHeader>
           <DialogTitle>Editar Paciente</DialogTitle>
           <DialogDescription>
-            Modifica los datos del paciente. Haz clic en guardar cuando termines.
+            Modifica los datos del paciente. Haz clic en guardar cuando
+            termines.
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 py-4">
-
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-6 py-4"
+          >
             {/* GRUPO 1: DATOS BÁSICOS */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -113,7 +124,9 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nombres</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -124,7 +137,9 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Apellidos</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -135,12 +150,23 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Tipo Doc.</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
                       <SelectContent>
-                        {Object.entries(DOCUMENT_TYPES_MAP).map(([key, label]) => (
-                          <SelectItem key={key} value={key}>{key}</SelectItem>
-                        ))}
+                        {Object.entries(DOCUMENT_TYPES_MAP).map(
+                          ([key, label]) => (
+                            <SelectItem key={key} value={key}>
+                              {key}
+                            </SelectItem>
+                          ),
+                        )}
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -153,7 +179,9 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Número Doc.</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -164,7 +192,9 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Teléfono</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -175,7 +205,9 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Email</FormLabel>
-                    <FormControl><Input {...field} /></FormControl>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -189,8 +221,18 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                     <Popover>
                       <PopoverTrigger asChild>
                         <FormControl>
-                          <Button variant={"outline"} className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                            {field.value ? format(field.value, "PPP", { locale: es }) : <span>Seleccionar</span>}
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP", { locale: es })
+                            ) : (
+                              <span>Seleccionar</span>
+                            )}
                             <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                           </Button>
                         </FormControl>
@@ -204,8 +246,8 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                             date > new Date() || date < new Date("1900-01-01")
                           }
                           captionLayout="dropdown"
-                        //   fromYear={1920}
-                        //   toYear={new Date().getFullYear()}
+                          //   fromYear={1920}
+                          //   toYear={new Date().getFullYear()}
                         />
                       </PopoverContent>
                     </Popover>
@@ -225,11 +267,20 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Médico Tratante</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue placeholder="Sin asignar" /></SelectTrigger></FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Sin asignar" />
+                          </SelectTrigger>
+                        </FormControl>
                         <SelectContent>
                           {doctors.map((doc) => (
-                            <SelectItem key={doc.id} value={doc.id}>Dr. {doc.firstName} {doc.lastName}</SelectItem>
+                            <SelectItem key={doc.id} value={doc.id}>
+                              Dr. {doc.firstName} {doc.lastName}
+                            </SelectItem>
                           ))}
                         </SelectContent>
                       </Select>
@@ -244,12 +295,25 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Afiliación</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
                         <SelectContent>
-                          <SelectItem value={PatientType.PRIVATE}>Particular</SelectItem>
-                          <SelectItem value={PatientType.INSURANCE_COPAY}>EPS / Copago</SelectItem>
-                          <SelectItem value={PatientType.INSURANCE_PACKAGE}>Póliza / Paquete</SelectItem>
+                          <SelectItem value={PatientType.PRIVATE}>
+                            Particular
+                          </SelectItem>
+                          <SelectItem value={PatientType.INSURANCE_COPAY}>
+                            EPS / Copago
+                          </SelectItem>
+                          <SelectItem value={PatientType.INSURANCE_PACKAGE}>
+                            Póliza / Paquete
+                          </SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -264,11 +328,20 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
                     render={({ field }) => (
                       <FormItem className="md:col-span-2">
                         <FormLabel>Aseguradora</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl><SelectTrigger><SelectValue placeholder="Seleccionar..." /></SelectTrigger></FormControl>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Seleccionar..." />
+                            </SelectTrigger>
+                          </FormControl>
                           <SelectContent>
                             {insurers.map((ins) => (
-                              <SelectItem key={ins.id} value={ins.id}>{ins.name}</SelectItem>
+                              <SelectItem key={ins.id} value={ins.id}>
+                                {ins.name}
+                              </SelectItem>
                             ))}
                           </SelectContent>
                         </Select>
@@ -281,7 +354,13 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" type="button" onClick={() => setOpen(false)}>Cancelar</Button>
+              <Button
+                variant="outline"
+                type="button"
+                onClick={() => setOpen(false)}
+              >
+                Cancelar
+              </Button>
               <Button type="submit" disabled={isPending}>
                 {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Guardar Cambios
@@ -291,5 +370,5 @@ export function EditPatientModal({ patient, insurers, doctors }: EditPatientModa
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
