@@ -17,7 +17,7 @@ export default async function NewPatientPage() {
   })
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-4 p-4">
       {/* Breadcrumb de navegación */}
       {/* <Breadcrumb>
             <BreadcrumbList>

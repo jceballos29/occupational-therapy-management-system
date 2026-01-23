@@ -2,7 +2,7 @@
 
 import { AppointmentsDataTable } from "./data-table"
 import { getColumns, AppointmentWithDoctor } from "./columns"
-import { PatientType } from "@/lib/generated/prisma/enums"
+import { PatientType } from "@prisma/client"
 
 interface AppointmentsTableWrapperProps {
   appointments: AppointmentWithDoctor[]

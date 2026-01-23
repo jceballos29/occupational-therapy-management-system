@@ -1,4 +1,4 @@
-import { Authorization } from "@/lib/generated/prisma/browser";
+import { Authorization } from "@prisma/client";
 import { PatientWithFullRelations } from "@/types/patient";
 import { AddAuthorizationModal } from "../authorizations/add-authorization-modal";
 import { AuthorizationsTableWrapper } from "../authorizations";

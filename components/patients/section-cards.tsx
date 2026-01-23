@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Authorization } from "@/lib/generated/prisma/browser";
+import { Authorization } from "@prisma/client";
 import { formatCOP } from "@/lib/utils";
 
 export interface SectionCardsProps {

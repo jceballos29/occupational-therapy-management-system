@@ -18,7 +18,7 @@ import { cn } from "@/lib/utils"
 import { updateAppointment } from "@/lib/actions/appointments"
 import { appointmentSchema, type AppointmentFormValues } from "@/lib/schemas/appointment"
 import { APPOINTMENT_TYPES_MAP } from "@/config/constants"
-import { AppointmentType, PatientType } from "@/lib/generated/prisma/enums"
+import { AppointmentType, PatientType } from "@prisma/client"
 
 interface EditAppointmentModalProps {
   appointment: {

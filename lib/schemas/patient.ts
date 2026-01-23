@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { DocumentType, PatientType } from "../generated/prisma/enums"
+import { DocumentType, PatientType } from "@prisma/client"
 
 
 export const patientFormSchema = z.object({

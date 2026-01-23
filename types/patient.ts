@@ -5,7 +5,7 @@ import {
   Doctor,
   Insurer,
   Patient,
-} from "@/lib/generated/prisma/client";
+} from "@prisma/client";
 
 // Re-export for convenience
 export type { Doctor, Insurer };

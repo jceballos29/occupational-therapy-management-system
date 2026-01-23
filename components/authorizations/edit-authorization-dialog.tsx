@@ -30,7 +30,7 @@ import { cn } from "@/lib/utils"
 
 import { updateAuthorization } from "@/lib/actions/authorizations"
 import { authorizationSchema, AuthorizationFormValues } from "@/lib/schemas/authorization"
-import { Authorization } from "@/lib/generated/prisma/client"
+import { Authorization } from "@prisma/client"
 
 interface EditAuthorizationDialogProps {
   authorization: Authorization

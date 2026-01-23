@@ -19,7 +19,7 @@ import { createAppointment } from "@/lib/actions/appointments"
 import { appointmentSchema, type AppointmentFormValues } from "@/lib/schemas/appointment"
 
 import { APPOINTMENT_TYPES_MAP } from "@/config/constants" // <--- Importamos el mapa
-import { AppointmentType, PatientType } from "@/lib/generated/prisma/enums"
+import { AppointmentType, PatientType } from "@prisma/client"
 
 interface AddAppointmentModalProps {
   patientId: string

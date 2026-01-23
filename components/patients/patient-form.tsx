@@ -36,7 +36,7 @@ import { cn } from "@/lib/utils"
 
 import { patientFormSchema, PatientFormValues } from "@/lib/schemas/patient"
 import { createPatient } from "@/lib/actions/patients"
-import { DocumentType, PatientType } from "@/lib/generated/prisma/enums"
+import { DocumentType, PatientType } from "@prisma/client"
 import { DOCUMENT_TYPES_MAP } from "@/config/constants"
 
 // Definimos las props que recibirá el componente (listas para los selects)
@@ -114,9 +114,9 @@ export function PatientForm({ insurers, doctors }: PatientFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Tipo de Documento</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} defaultValue={field.value} >
                   <FormControl>
-                    <SelectTrigger>
+                    <SelectTrigger className="w-full">
                       <SelectValue placeholder="Selecciona..." />
                     </SelectTrigger>
                   </FormControl>

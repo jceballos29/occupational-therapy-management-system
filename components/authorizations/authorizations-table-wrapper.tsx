@@ -2,7 +2,7 @@
 
 import { AuthorizationsDataTable } from "./data-table";
 import { getAuthorizationColumns } from "./columns";
-import { Authorization } from "@/lib/generated/prisma/browser";
+import { Authorization } from "@prisma/client";
 
 interface AuthorizationsTableWrapperProps {
   authorizations: Authorization[];

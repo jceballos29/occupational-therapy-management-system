@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import {
   Authorization,
   AuthorizationStatus,
-} from "@/lib/generated/prisma/browser";
+} from "@prisma/client";
 import { useState } from "react";
 import { EditAuthorizationDialog } from "./edit-authorization-dialog";
 

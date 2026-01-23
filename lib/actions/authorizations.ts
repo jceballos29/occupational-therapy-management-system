@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma"
 import { authorizationSchema, AuthorizationFormValues } from "@/lib/schemas/authorization"
 import { revalidatePath } from "next/cache"
-import { AuthorizationStatus } from "../generated/prisma/enums"
+import { AuthorizationStatus } from "@prisma/client"
 
 export async function createAuthorization(data: AuthorizationFormValues) {
   const result = authorizationSchema.safeParse(data)
