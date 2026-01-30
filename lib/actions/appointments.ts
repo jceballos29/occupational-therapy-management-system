@@ -3,7 +3,7 @@
 import prisma from "@/lib/prisma" // Asegúrate de que esta ruta sea la correcta para tu proyecto
 import { appointmentSchema, AppointmentFormValues } from "@/lib/schemas/appointment"
 import { revalidatePath } from "next/cache"
-import { AppointmentStatus } from "@prisma/client"
+import { AppointmentStatus } from "../generated/prisma/enums"
 
 
 // 1. CREAR CITA

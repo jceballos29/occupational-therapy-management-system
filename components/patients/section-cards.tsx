@@ -4,7 +4,7 @@ import {
   CardHeader,
   CardTitle
 } from "@/components/ui/card";
-import { Authorization } from "@prisma/client";
+import { Authorization } from "@/lib/generated/prisma/browser";
 import { formatCOP } from "@/lib/utils";
 
 export interface SectionCardsProps {
@@ -33,7 +33,7 @@ export function SectionCards({
           <CardDescription className="font-medium text-xs">
             Sesiones Disponibles
           </CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums text-right">
+          <CardTitle className="text-xl font-semibold tabular-nums text-right">
             {isPrivate ? "---" : sessionsLeft}
           </CardTitle>
         </CardHeader>
@@ -47,7 +47,7 @@ export function SectionCards({
           <CardDescription className="font-medium text-xs">
             Autorización Activa
           </CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums text-right">
+          <CardTitle className="text-xl font-semibold tabular-nums text-right">
             {activeAuth ? activeAuth.code : "---"}
           </CardTitle>
         </CardHeader>
@@ -57,7 +57,7 @@ export function SectionCards({
           <CardDescription className="font-medium text-xs">
             Sesiones Asistidas
           </CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums text-right">
+          <CardTitle className="text-xl font-semibold tabular-nums text-right">
             {totalAssisted}
           </CardTitle>
         </CardHeader>
@@ -67,7 +67,7 @@ export function SectionCards({
           <CardDescription className="font-medium text-xs">
             Valor Total
           </CardDescription>
-          <CardTitle className="text-2xl font-semibold tabular-nums text-right">
+          <CardTitle className="text-xl font-semibold tabular-nums text-right">
             {formatCOP(totalPaid)}
           </CardTitle>
         </CardHeader>

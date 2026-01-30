@@ -1,4 +1,4 @@
-import { AppointmentStatus, AppointmentType, DocumentType } from "@prisma/client"
+import { AppointmentStatus, AppointmentType, DocumentType } from "@/lib/generated/prisma/enums"
 
 export const DOCUMENT_TYPES_MAP: Record<DocumentType, string> = {
   CC: "Cédula de Ciudadanía",

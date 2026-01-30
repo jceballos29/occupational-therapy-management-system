@@ -2,6 +2,9 @@
 CREATE TYPE "UserRole" AS ENUM ('ADMIN', 'DOCTOR', 'ASSISTANT', 'SECRETARY');
 
 -- CreateEnum
+CREATE TYPE "AppointmentType" AS ENUM ('FIRST_TIME', 'EVALUATION', 'FOLLOW_UP');
+
+-- CreateEnum
 CREATE TYPE "AppointmentStatus" AS ENUM ('SCHEDULED', 'COMPLETED', 'CANCELLED', 'NO_SHOW');
 
 -- CreateEnum
@@ -12,6 +15,9 @@ CREATE TYPE "PatientType" AS ENUM ('PRIVATE', 'INSURANCE_COPAY', 'INSURANCE_PACK
 
 -- CreateEnum
 CREATE TYPE "AuthorizationStatus" AS ENUM ('ACTIVE', 'COMPLETED', 'EXPIRED');
+
+-- CreateEnum
+CREATE TYPE "DocumentType" AS ENUM ('CC', 'CE', 'CD', 'PA', 'SC', 'PE', 'PT', 'RC', 'TI', 'CN', 'AS', 'MS', 'DE');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -52,6 +58,7 @@ CREATE TABLE "Insurer" (
 -- CreateTable
 CREATE TABLE "Patient" (
     "id" TEXT NOT NULL,
+    "documentType" "DocumentType" NOT NULL DEFAULT 'CC',
     "documentId" TEXT NOT NULL,
     "firstName" TEXT NOT NULL,
     "lastName" TEXT NOT NULL,
@@ -60,6 +67,7 @@ CREATE TABLE "Patient" (
     "birthDate" TIMESTAMP(3) NOT NULL,
     "type" "PatientType" NOT NULL DEFAULT 'PRIVATE',
     "insurerId" TEXT,
+    "treatingDoctorId" TEXT,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
@@ -101,6 +109,7 @@ CREATE TABLE "Appointment" (
     "id" TEXT NOT NULL,
     "startTime" TIMESTAMP(3) NOT NULL,
     "endTime" TIMESTAMP(3) NOT NULL,
+    "type" "AppointmentType" NOT NULL DEFAULT 'FOLLOW_UP',
     "status" "AppointmentStatus" NOT NULL DEFAULT 'SCHEDULED',
     "notes" TEXT,
     "patientId" TEXT NOT NULL,
@@ -147,6 +156,9 @@ ALTER TABLE "Doctor" ADD CONSTRAINT "Doctor_userId_fkey" FOREIGN KEY ("userId") 
 
 -- AddForeignKey
 ALTER TABLE "Patient" ADD CONSTRAINT "Patient_insurerId_fkey" FOREIGN KEY ("insurerId") REFERENCES "Insurer"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Patient" ADD CONSTRAINT "Patient_treatingDoctorId_fkey" FOREIGN KEY ("treatingDoctorId") REFERENCES "Doctor"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Tariff" ADD CONSTRAINT "Tariff_insurerId_fkey" FOREIGN KEY ("insurerId") REFERENCES "Insurer"("id") ON DELETE SET NULL ON UPDATE CASCADE;

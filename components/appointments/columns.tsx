@@ -51,7 +51,7 @@ import {
   AppointmentType,
   Doctor,
   PatientType,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 import { useState } from "react";
 import { EditAppointmentModal } from "./edit-appointment-modal";
 

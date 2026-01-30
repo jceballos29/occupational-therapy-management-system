@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { AppointmentType } from "@prisma/client"
+import { AppointmentType } from "../generated/prisma/enums"
 
 export const appointmentSchema = z.object({
   patientId: z.string(),

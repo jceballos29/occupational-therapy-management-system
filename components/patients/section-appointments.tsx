@@ -23,6 +23,7 @@ export function SectionAppointments({
           patientId={patient.id}
           patientType={patient.type}
           doctors={doctors}
+          tariffs={patient.insurer?.tariffs || []}
         />
       </div>
       <AppointmentsTableWrapper

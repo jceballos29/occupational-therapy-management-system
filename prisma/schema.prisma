@@ -5,8 +5,8 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../node_modules/.prisma/client"
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
@@ -25,9 +25,9 @@ enum UserRole {
 }
 
 enum AppointmentType {
-  FIRST_TIME   // Primera vez
-  EVALUATION   // Evaluación
-  FOLLOW_UP    // Seguimiento
+  FIRST_TIME // Primera vez
+  EVALUATION // Evaluación
+  FOLLOW_UP // Seguimiento
 }
 
 enum AppointmentStatus {
@@ -45,9 +45,9 @@ enum PaymentMethod {
 }
 
 enum PatientType {
-  PRIVATE             // Particular (Paga 100%)
-  INSURANCE_COPAY     // Asegurado con Copago (Paga una parte)
-  INSURANCE_PACKAGE   // Asegurado por Paquete (No paga en cita, paga aseguradora por lote)
+  PRIVATE // Particular (Paga 100%)
+  INSURANCE_COPAY // Asegurado con Copago (Paga una parte)
+  INSURANCE_PACKAGE // Asegurado por Paquete (No paga en cita, paga aseguradora por lote)
 }
 
 enum AuthorizationStatus {
@@ -57,19 +57,19 @@ enum AuthorizationStatus {
 }
 
 enum DocumentType {
-  CC  // Cédula de Ciudadanía
-  CE  // Cédula de Extranjería
-  CD  // Carné Diplomático
-  PA  // Pasaporte
-  SC  // Salvoconducto
-  PE  // Permiso Especial de Permanencia
-  PT  // Permiso por Protección Temporal
-  RC  // Registro Civil
-  TI  // Tarjeta de Identidad
-  CN  // Certificado de Nacido Vivo
-  AS  // Adulto Sin Identificación
-  MS  // Menor Sin Identificación
-  DE  // Documento Extranjero
+  CC // Cédula de Ciudadanía
+  CE // Cédula de Extranjería
+  CD // Carné Diplomático
+  PA // Pasaporte
+  SC // Salvoconducto
+  PE // Permiso Especial de Permanencia
+  PT // Permiso por Protección Temporal
+  RC // Registro Civil
+  TI // Tarjeta de Identidad
+  CN // Certificado de Nacido Vivo
+  AS // Adulto Sin Identificación
+  MS // Menor Sin Identificación
+  DE // Documento Extranjero
 }
 
 // ---------------------------------------------------------
@@ -77,126 +77,128 @@ enum DocumentType {
 // ---------------------------------------------------------
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String
-  password  String
-  role      UserRole @default(SECRETARY)
-  
-  doctor    Doctor? 
-  
+  id       String   @id @default(cuid())
+  email    String   @unique
+  name     String
+  password String
+  role     UserRole @default(SECRETARY)
+
+  doctor Doctor?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Doctor {
-  id          String  @id @default(cuid())
-  firstName   String
-  lastName    String
-  colorCode   String? @default("#3b82f6")
-  phone       String?
+  id        String  @id @default(cuid())
+  firstName String
+  lastName  String
+  colorCode String? @default("#3b82f6")
+  phone     String?
 
-  userId      String? @unique
-  user        User?   @relation(fields: [userId], references: [id])
+  userId String? @unique
+  user   User?   @relation(fields: [userId], references: [id])
 
-  appointments Appointment[] 
-  assignedPatients Patient[] @relation("TreatingDoctor")
+  appointments     Appointment[]
+  assignedPatients Patient[]     @relation("TreatingDoctor")
 
-  active      Boolean @default(true)
+  active Boolean @default(true)
 }
 
 model Insurer {
-  id      String @id @default(cuid())
-  name    String @unique
-  nit     String?
-  active  Boolean @default(true)
-  
+  id     String  @id @default(cuid())
+  name   String  @unique
+  nit    String?
+  active Boolean @default(true)
+
   patients       Patient[]
   tariffs        Tariff[]
   authorizations Authorization[] // Una aseguradora emite muchas autorizaciones
 }
 
 model Patient {
-  id             String      @id @default(cuid())
-  documentType   DocumentType @default(CC)
-  documentId     String      @unique
-  firstName      String
-  lastName       String
-  email          String?
-  phone          String
-  birthDate      DateTime
-  
+  id           String       @id @default(cuid())
+  documentType DocumentType @default(CC)
+  documentId   String       @unique
+  firstName    String
+  lastName     String
+  email        String?
+  phone        String
+  birthDate    DateTime
+
   // Tipo de afiliación actual
-  type           PatientType @default(PRIVATE)
-  insurerId      String?
-  insurer        Insurer?    @relation(fields: [insurerId], references: [id])
+  type      PatientType @default(PRIVATE)
+  insurerId String
+  insurer   Insurer     @relation(fields: [insurerId], references: [id])
 
   treatingDoctorId String?
-  treatingDoctor   Doctor?   @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id])
+  treatingDoctor   Doctor? @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id])
 
   appointments   Appointment[]
   authorizations Authorization[] // Un paciente puede tener varios paquetes de sesiones
-  
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Tariff {
-  id          String   @id @default(cuid())
-  name        String   
-  
-  insurerId   String?  
-  insurer     Insurer? @relation(fields: [insurerId], references: [id])
+  id   String @id @default(cuid())
+  name String
 
-  costTotal     Decimal  @db.Decimal(10, 2)
-  copayAmount   Decimal  @default(0) @db.Decimal(10, 2)
-  insurerAmount Decimal  @default(0) @db.Decimal(10, 2)
+  insurerId String
+  insurer   Insurer @relation(fields: [insurerId], references: [id])
 
-  active      Boolean  @default(true)
+  type PatientType // Tipo de tarifa: PRIVATE, COPAY, PACKAGE
+
+  costTotal     Decimal @db.Decimal(10, 2)
+  copayAmount   Decimal @default(0) @db.Decimal(10, 2)
+  insurerAmount Decimal @default(0) @db.Decimal(10, 2)
+
+  active Boolean @default(true)
 }
 
 // NUEVA ENTIDAD: Autorización (El Paquete)
 model Authorization {
-  id              String   @id @default(cuid())
-  code            String   // El código impreso en la orden médica (Ej: 987654)
-  
+  id   String @id @default(cuid())
+  code String // El código impreso en la orden médica (Ej: 987654)
+
   // Relaciones
-  patientId       String
-  patient         Patient  @relation(fields: [patientId], references: [id])
-  insurerId       String
-  insurer         Insurer  @relation(fields: [insurerId], references: [id])
-  
+  patientId String
+  patient   Patient @relation(fields: [patientId], references: [id])
+  insurerId String
+  insurer   Insurer @relation(fields: [insurerId], references: [id])
+
   // Control de Paquete
-  totalSessions   Int      // Ej: 10 sesiones autorizadas
-  usedSessions    Int      @default(0) // Cuantas lleva consumidas (Calculado)
-  
-  validFrom       DateTime
-  validUntil      DateTime
-  
-  status          AuthorizationStatus @default(ACTIVE)
-  
-  appointments    Appointment[] // Qué citas consumieron esta autorización
-  
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  totalSessions Int // Ej: 10 sesiones autorizadas
+  usedSessions  Int @default(0) // Cuantas lleva consumidas (Calculado)
+
+  validFrom  DateTime
+  validUntil DateTime
+
+  status AuthorizationStatus @default(ACTIVE)
+
+  appointments Appointment[] // Qué citas consumieron esta autorización
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([code, insurerId]) // El código debe ser único por aseguradora
 }
 
 model Appointment {
-  id        String   @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   startTime DateTime
-  endTime   DateTime 
-  type      AppointmentType @default(FOLLOW_UP)
+  endTime   DateTime
+  type      AppointmentType   @default(FOLLOW_UP)
   status    AppointmentStatus @default(SCHEDULED)
   notes     String?
 
   patientId String
   patient   Patient @relation(fields: [patientId], references: [id])
-  
-  doctorId  String
-  doctor    Doctor  @relation(fields: [doctorId], references: [id])
+
+  doctorId String
+  doctor   Doctor @relation(fields: [doctorId], references: [id])
 
   // NUEVO: Relación con Autorización
   // Si es Particular, esto es null. Si es Paquete, es obligatorio.
@@ -204,23 +206,23 @@ model Appointment {
   authorization   Authorization? @relation(fields: [authorizationId], references: [id])
 
   // Datos financieros (Snapshot)
-  priceTotal    Decimal? @db.Decimal(10, 2)
-  priceCopay    Decimal? @db.Decimal(10, 2)
-  priceInsurer  Decimal? @db.Decimal(10, 2)
+  priceTotal   Decimal? @db.Decimal(10, 2)
+  priceCopay   Decimal? @db.Decimal(10, 2)
+  priceInsurer Decimal? @db.Decimal(10, 2)
 
-  payments      Payment[]
-  
+  payments Payment[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Payment {
-  id            String        @id @default(cuid())
-  amount        Decimal       @db.Decimal(10, 2)
-  method        PaymentMethod
-  date          DateTime      @default(now())
-  payer         String        
-  
+  id     String        @id @default(cuid())
+  amount Decimal       @db.Decimal(10, 2)
+  method PaymentMethod
+  date   DateTime      @default(now())
+  payer  String
+
   appointmentId String
-  appointment   Appointment   @relation(fields: [appointmentId], references: [id])
+  appointment   Appointment @relation(fields: [appointmentId], references: [id])
 }

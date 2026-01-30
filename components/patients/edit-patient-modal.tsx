@@ -45,7 +45,7 @@ import { cn } from "@/lib/utils";
 import { patientFormSchema, PatientFormValues } from "@/lib/schemas/patient";
 import { updatePatient } from "@/lib/actions/patients";
 import { DOCUMENT_TYPES_MAP } from "@/config/constants";
-import { Patient, PatientType } from "@prisma/client";
+import { Patient, PatientType } from "@/lib/generated/prisma/browser";
 
 import type { DoctorListItem, InsurerListItem } from "@/types/patient";
 

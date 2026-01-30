@@ -5,9 +5,9 @@ import {
   Doctor,
   Insurer,
   Patient,
-} from "@prisma/client";
+  PatientType,
+} from "@/lib/generated/prisma/client";
 
-// Re-export for convenience
 export type { Doctor, Insurer };
 
 /**
@@ -23,7 +23,7 @@ export type InsurerListItem = Pick<Insurer, "id" | "name">;
 export type DoctorListItem = Pick<Doctor, "id" | "firstName" | "lastName">;
 
 export type PatientWithRelations = Patient & {
-  insurer: Insurer | null;
+  insurer: Insurer;
   treatingDoctor: Doctor | null;
 };
 
@@ -57,10 +57,28 @@ export type SerializedAppointment = {
 };
 
 /**
+ * Tipo para tarifa serializada (con Decimales convertidos a números)
+ */
+export type SerializedTariff = {
+  id: string;
+  name: string;
+  insurerId: string;
+  type: PatientType;
+  costTotal: number;
+  copayAmount: number;
+  insurerAmount: number;
+  active: boolean;
+};
+
+/**
  * Tipo para paciente completo con todas sus relaciones
  */
 export type PatientWithFullRelations = Omit<Patient, "appointments"> & {
-  insurer: (Insurer & { id: string; name: string }) | null;
+  insurer: Insurer & {
+    id: string;
+    name: string;
+    tariffs?: SerializedTariff[];
+  };
   treatingDoctor: Doctor | null;
   authorizations: Authorization[];
   appointments: SerializedAppointment[];
@@ -106,7 +124,7 @@ export type PatientForInfoSheet = Pick<
   | "createdAt"
   | "updatedAt"
 > & {
-  insurer: { name: string } | null;
+  insurer: { name: string };
   treatingDoctor: {
     firstName: string;
     lastName: string;

@@ -21,7 +21,7 @@ import { EditAuthorizationDialog } from "../authorizations/edit-authorization-di
 import {
   Authorization,
   AuthorizationStatus,
-} from "@prisma/client";
+} from "@/lib/generated/prisma/browser";
 
 interface AuthorizationItemProps {
   auth: Authorization;

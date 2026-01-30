@@ -66,7 +66,7 @@ export default async function PatientProfilePage({ params }: PageProps) {
           </>
         }
       />
-      <Separator />
+      
       <SectionCards
         isPrivate={isPrivate}
         activeAuth={activeAuth}

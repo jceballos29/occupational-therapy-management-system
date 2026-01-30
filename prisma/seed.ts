@@ -1,129 +1,218 @@
-import { PrismaClient, UserRole, PatientType, AuthorizationStatus, DocumentType, } from "@prisma/client";
-import { PrismaPg } from '@prisma/adapter-pg'
-import 'dotenv/config'
-
-const adapter = new PrismaPg({
-  connectionString: process.env.DATABASE_URL,
-})
+import {
+  AppointmentStatus,
+  AppointmentType,
+  AuthorizationStatus,
+  DocumentType,
+  PatientType,
+  PrismaClient,
+  UserRole,
+} from "@/lib/generated/prisma/client";
+import { withAccelerate } from "@prisma/extension-accelerate";
+import "dotenv/config";
 
 const prisma = new PrismaClient({
-  adapter,
-});
+  accelerateUrl: process.env.DATABASE_URL!,
+}).$extends(withAccelerate());
 
 async function main() {
-  console.log('🌱 Iniciando seeding v3 (Con Doctor Tratante)...')
+  console.log("🌱 Iniciando seeding v4 (Con Particular + Tipos de Tarifa)...");
 
   // 1. LIMPIEZA
-  await prisma.payment.deleteMany()
-  await prisma.appointment.deleteMany()
-  await prisma.authorization.deleteMany()
-  await prisma.tariff.deleteMany()
-  await prisma.patient.deleteMany()
-  await prisma.insurer.deleteMany()
-  await prisma.doctor.deleteMany()
-  await prisma.user.deleteMany()
+  await prisma.payment.deleteMany();
+  await prisma.appointment.deleteMany();
+  await prisma.authorization.deleteMany();
+  await prisma.tariff.deleteMany();
+  await prisma.patient.deleteMany();
+  await prisma.insurer.deleteMany();
+  await prisma.doctor.deleteMany();
+  await prisma.user.deleteMany();
 
   // 2. DOCTOR
   const doctorUser = await prisma.user.create({
     data: {
-      email: 'doctor@terapia.com',
-      name: 'Dr. Juan Pérez',
-      password: 'password123',
+      email: "doctor@terapia.com",
+      name: "Dr. Juan Pérez",
+      password: "password123",
       role: UserRole.DOCTOR,
-    }
-  })
+    },
+  });
 
   const doctor = await prisma.doctor.create({
     data: {
-      firstName: 'Juan',
-      lastName: 'Pérez',
+      firstName: "Juan",
+      lastName: "Pérez",
       userId: doctorUser.id,
-      colorCode: '#2563eb',
-      phone: '3001234567'
-    }
-  })
+      colorCode: "#2563eb",
+      phone: "3001234567",
+    },
+  });
 
   // 3. ASEGURADORAS
+
+  // ✅ NUEVA: Aseguradora "Particular" para pacientes privados
+  const particular = await prisma.insurer.create({
+    data: {
+      name: "Particular",
+      nit: null,
+      active: true,
+    },
+  });
+
   const sura = await prisma.insurer.create({
-    data: { name: 'Seguros Sura (Híbrido)', nit: '800123456' }
-  })
+    data: { name: "Seguros Sura", nit: "800123456" },
+  });
 
   const bolivar = await prisma.insurer.create({
-    data: { name: 'Seguros Bolívar', nit: '900987654' }
-  })
+    data: { name: "Seguros Bolívar", nit: "900987654" },
+  });
 
-  // 4. TARIFAS
-  // Sura EPS
+  const sanitas = await prisma.insurer.create({
+    data: { name: "EPS Sanitas", nit: "800251440" },
+  });
+
+  // 4. TARIFAS CON TIPOS
+
+  // --- TARIFAS PARTICULARES ---
   await prisma.tariff.create({
     data: {
-      name: 'Sura EPS - Terapia Ocupacional',
-      insurerId: sura.id,
-      costTotal: 45000,
-      copayAmount: 4500,  
-      insurerAmount: 40500 
-    }
-  })
+      name: "Sesión Particular 2026",
+      insurerId: particular.id,
+      type: PatientType.PRIVATE,
+      costTotal: 120000,
+      copayAmount: 120000, // El paciente paga todo
+      insurerAmount: 0,
+      active: true,
+    },
+  });
 
-  // Sura Prepagada
+  // Tarifa histórica (inactiva) - Ejemplo de historial
   await prisma.tariff.create({
     data: {
-      name: 'Sura Poliza Global - Paquete',
+      name: "Sesión Particular 2025",
+      insurerId: particular.id,
+      type: PatientType.PRIVATE,
+      costTotal: 100000,
+      copayAmount: 100000,
+      insurerAmount: 0,
+      active: false, // Inactiva - solo para historial
+    },
+  });
+
+  // --- TARIFAS SURA ---
+
+  // Sura con Copago
+  await prisma.tariff.create({
+    data: {
+      name: "Sura EPS - Copago",
       insurerId: sura.id,
-      costTotal: 65000,
-      copayAmount: 0,     
-      insurerAmount: 65000
-    }
-  })
+      type: PatientType.INSURANCE_COPAY,
+      costTotal: 80000,
+      copayAmount: 20000,
+      insurerAmount: 60000,
+      active: true,
+    },
+  });
+
+  // Sura Paquete
+  await prisma.tariff.create({
+    data: {
+      name: "Sura Póliza - Paquete",
+      insurerId: sura.id,
+      type: PatientType.INSURANCE_PACKAGE,
+      costTotal: 100000,
+      copayAmount: 0,
+      insurerAmount: 100000,
+      active: true,
+    },
+  });
+
+  // --- TARIFAS BOLÍVAR ---
 
   // Bolívar (Solo Paquete)
   await prisma.tariff.create({
     data: {
-      name: 'Bolívar ARL',
+      name: "Bolívar ARL - Paquete",
       insurerId: bolivar.id,
-      costTotal: 55000,
+      type: PatientType.INSURANCE_PACKAGE,
+      costTotal: 95000,
       copayAmount: 0,
-      insurerAmount: 55000
-    }
-  })
+      insurerAmount: 95000,
+      active: true,
+    },
+  });
 
-  // Particular
+  // --- TARIFAS SANITAS ---
+
+  // Sanitas con Copago
   await prisma.tariff.create({
     data: {
-      name: 'Particular 2026',
-      insurerId: null,
-      costTotal: 80000,
-      copayAmount: 80000,
-      insurerAmount: 0
-    }
-  })
+      name: "Sanitas EPS - Copago",
+      insurerId: sanitas.id,
+      type: PatientType.INSURANCE_COPAY,
+      costTotal: 75000,
+      copayAmount: 15000,
+      insurerAmount: 60000,
+      active: true,
+    },
+  });
 
   // 5. PACIENTES
-const patientsData = [
-    { 
-      name: 'Pepito', last: 'Copago', 
-      doc: '111222', docType: DocumentType.TI, // Correcto
-      type: PatientType.INSURANCE_COPAY, insurer: sura.id,
-      auth: { total: 10, used: 2 } 
+  const patientsData = [
+    {
+      name: "María",
+      last: "Particular",
+      doc: "123456789",
+      docType: DocumentType.CC,
+      type: PatientType.PRIVATE,
+      insurer: particular.id, // ✅ Ahora usa insurerId en vez de null
+      auth: null,
     },
-    { 
-      name: 'Anita', last: 'Paquete', 
-      doc: '555666', docType: DocumentType.CC, // Correcto
-      type: PatientType.INSURANCE_PACKAGE, insurer: sura.id,
-      auth: { total: 20, used: 5 } 
+    {
+      name: "Pepito",
+      last: "López",
+      doc: "111222333",
+      docType: DocumentType.TI,
+      type: PatientType.INSURANCE_COPAY,
+      insurer: sura.id,
+      auth: { total: 10, used: 2 },
     },
-    { 
-      name: 'Carlos', last: 'Extranjero', 
-      doc: 'E-555999', docType: DocumentType.CE, // <--- CAMBIO: Usamos CE o PA
-      type: PatientType.PRIVATE, insurer: null,
-      auth: null
+    {
+      name: "Anita",
+      last: "Gómez",
+      doc: "555666777",
+      docType: DocumentType.CC,
+      type: PatientType.INSURANCE_PACKAGE,
+      insurer: sura.id,
+      auth: { total: 20, used: 5 },
     },
-    { 
-      name: 'Rogelio', last: 'Veneco', 
-      doc: '999888', docType: DocumentType.PT, // <--- CAMBIO: Probamos el Permiso Temporal
-      type: PatientType.INSURANCE_PACKAGE, insurer: bolivar.id,
-      auth: { total: 5, used: 0 }
-    }
-  ]
+    {
+      name: "Carlos",
+      last: "Extranjero",
+      doc: "E-555999",
+      docType: DocumentType.CE,
+      type: PatientType.PRIVATE,
+      insurer: particular.id, // ✅ Particular
+      auth: null,
+    },
+    {
+      name: "Rogelio",
+      last: "Martínez",
+      doc: "999888777",
+      docType: DocumentType.PT,
+      type: PatientType.INSURANCE_PACKAGE,
+      insurer: bolivar.id,
+      auth: { total: 5, used: 0 },
+    },
+    {
+      name: "Laura",
+      last: "Sánchez",
+      doc: "444555666",
+      docType: DocumentType.CC,
+      type: PatientType.INSURANCE_COPAY,
+      insurer: sanitas.id,
+      auth: { total: 8, used: 3 },
+    },
+  ];
 
   for (const p of patientsData) {
     const patient = await prisma.patient.create({
@@ -131,43 +220,103 @@ const patientsData = [
         firstName: p.name,
         lastName: p.last,
         documentId: p.doc,
+        documentType: p.docType,
         email: `${p.name.toLowerCase()}@demo.com`,
-        phone: '3000000000',
-        birthDate: new Date('1995-05-20'),
+        phone: "3000000000",
+        birthDate: new Date("1995-05-20"),
         type: p.type,
-        insurerId: p.insurer,
-        
-        // ¡AQUÍ ESTÁ EL CAMBIO!
-        // Asignamos al doctor creado arriba como el médico tratante
-        treatingDoctorId: doctor.id 
-      }
-    })
+        insurerId: p.insurer, // ✅ Siempre tiene insurerId
+        treatingDoctorId: doctor.id,
+      },
+    });
 
+    // Obtener la tarifa correspondiente al tipo de paciente y aseguradora
+    const patientTariff = await prisma.tariff.findFirst({
+      where: {
+        insurerId: p.insurer,
+        type: p.type,
+        active: true,
+      },
+    });
+
+    let authorization = null;
     if (p.auth && p.insurer) {
-      await prisma.authorization.create({
+      authorization = await prisma.authorization.create({
         data: {
-          code: `AUT-${p.doc}-2026`,
+          code: `AUT-${p.doc.slice(0, 5)}-2026`,
           patientId: patient.id,
           insurerId: p.insurer,
           totalSessions: p.auth.total,
           usedSessions: p.auth.used,
           validFrom: new Date(),
           validUntil: new Date(new Date().setMonth(new Date().getMonth() + 6)),
-          status: AuthorizationStatus.ACTIVE
-        }
-      })
+          status: AuthorizationStatus.ACTIVE,
+        },
+      });
+
+      // Crear citas COMPLETED que coincidan con usedSessions
+      for (let i = 0; i < p.auth.used; i++) {
+        const daysAgo = (p.auth.used - i) * 7; // Una cita por semana
+        const appointmentDate = new Date();
+        appointmentDate.setDate(appointmentDate.getDate() - daysAgo);
+        appointmentDate.setHours(9 + i, 0, 0, 0); // Horario de 9am en adelante
+
+        await prisma.appointment.create({
+          data: {
+            patientId: patient.id,
+            doctorId: doctor.id,
+            authorizationId: authorization.id,
+            startTime: appointmentDate,
+            endTime: new Date(appointmentDate.getTime() + 45 * 60000), // 45 minutos
+            type:
+              i === 0 ? AppointmentType.FIRST_TIME : AppointmentType.FOLLOW_UP,
+            status: AppointmentStatus.COMPLETED,
+            priceTotal: patientTariff?.costTotal || 0,
+            priceCopay: patientTariff?.copayAmount || 0,
+            priceInsurer: patientTariff?.insurerAmount || 0,
+            notes: `Sesión ${i + 1} de ${p.auth.total} - Completada`,
+          },
+        });
+      }
+    } else if (p.type === PatientType.PRIVATE && patientTariff) {
+      // Para pacientes particulares, crear algunas citas de ejemplo
+      const appointmentDate = new Date();
+      appointmentDate.setDate(appointmentDate.getDate() - 7);
+      appointmentDate.setHours(10, 0, 0, 0);
+
+      await prisma.appointment.create({
+        data: {
+          patientId: patient.id,
+          doctorId: doctor.id,
+          authorizationId: null, // Particulares no tienen autorización
+          startTime: appointmentDate,
+          endTime: new Date(appointmentDate.getTime() + 45 * 60000),
+          type: AppointmentType.FIRST_TIME,
+          status: AppointmentStatus.COMPLETED,
+          priceTotal: patientTariff.costTotal,
+          priceCopay: patientTariff.copayAmount,
+          priceInsurer: patientTariff.insurerAmount,
+          notes: "Primera sesión particular - Completada",
+        },
+      });
     }
   }
 
-  console.log('✅ Seeding finalizado con relaciones Doctor-Paciente.')
+  console.log("✅ Seeding v4 finalizado:");
+  console.log("   - Aseguradoras: Particular, Sura, Bolívar, Sanitas");
+  console.log("   - Tarifas con TIPOS (PRIVATE, COPAY, PACKAGE)");
+  console.log("   - 6 pacientes con insurerId obligatorio");
+  console.log("   - Autorizaciones con sesiones usadas");
+  console.log("   - Citas COMPLETED consistentes con usedSessions");
+  console.log("   - Historial de tarifas (inactivas)");
 }
 
 main()
   .then(async () => {
-    await prisma.$disconnect()
+    await prisma.$disconnect();
   })
   .catch(async (e) => {
-    console.error(e)
-    await prisma.$disconnect()
-    process.exit(1)
-  })
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });
