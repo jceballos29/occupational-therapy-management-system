@@ -51,6 +51,7 @@ export type SerializedAppointment = {
     lastName: string;
     phone: string | null;
     colorCode: string | null;
+    speciality: string;
     userId: string | null;
     active: boolean;
   };
@@ -108,22 +109,7 @@ export type PatientByIdResult = {
  * Tipo para paciente usado en el sheet de información
  * Incluye solo las relaciones necesarias para mostrar datos básicos
  */
-export type PatientForInfoSheet = Pick<
-  Patient,
-  | "id"
-  | "firstName"
-  | "lastName"
-  | "documentId"
-  | "documentType"
-  | "phone"
-  | "email"
-  | "birthDate"
-  | "type"
-  | "insurerId"
-  | "treatingDoctorId"
-  | "createdAt"
-  | "updatedAt"
-> & {
+export type PatientForInfoSheet = Patient & {
   insurer: { name: string };
   treatingDoctor: {
     firstName: string;

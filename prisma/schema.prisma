@@ -72,6 +72,12 @@ enum DocumentType {
   DE // Documento Extranjero
 }
 
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
 // ---------------------------------------------------------
 // MODELOS
 // ---------------------------------------------------------
@@ -95,6 +101,7 @@ model Doctor {
   lastName  String
   colorCode String? @default("#3b82f6")
   phone     String?
+  speciality String
 
   userId String? @unique
   user   User?   @relation(fields: [userId], references: [id])
@@ -110,6 +117,7 @@ model Insurer {
   name   String  @unique
   nit    String?
   active Boolean @default(true)
+  isPrivate Boolean @default(false)
 
   patients       Patient[]
   tariffs        Tariff[]
@@ -125,6 +133,7 @@ model Patient {
   email        String?
   phone        String
   birthDate    DateTime
+  gender       Gender
 
   // Tipo de afiliación actual
   type      PatientType @default(PRIVATE)

@@ -1,21 +1,21 @@
-"use client"
+"use client";
 
-import { useState, useTransition } from "react"
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { format } from "date-fns"
-import { CalendarIcon, Loader2, Save } from "lucide-react"
-import { toast } from "sonner"
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { format } from "date-fns";
+import { CalendarIcon, Loader2, Save } from "lucide-react";
+import { toast } from "sonner";
 
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
+} from "@/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -23,23 +23,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { cn } from "@/lib/utils"
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
-import { updateAuthorization } from "@/lib/actions/authorizations"
-import { authorizationSchema, AuthorizationFormValues } from "@/lib/schemas/authorization"
-import { Authorization } from "@/lib/generated/prisma/browser"
+import { updateAuthorization } from "@/lib/actions/authorizations";
+import {
+  authorizationSchema,
+  AuthorizationFormValues,
+} from "@/lib/schemas/authorization";
+import { Authorization } from "@/lib/generated/prisma/browser";
 
 interface EditAuthorizationDialogProps {
-  authorization: Authorization
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  authorization: Authorization;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-export function EditAuthorizationDialog({ authorization, open, onOpenChange }: EditAuthorizationDialogProps) {
-  const [isPending, startTransition] = useTransition()
+export function EditAuthorizationDialog({
+  authorization,
+  open,
+  onOpenChange,
+}: EditAuthorizationDialogProps) {
+  const [isPending, startTransition] = useTransition();
 
   // Precargamos los datos existentes
   const form = useForm({
@@ -52,19 +63,19 @@ export function EditAuthorizationDialog({ authorization, open, onOpenChange }: E
       validFrom: authorization.validFrom,
       validUntil: authorization.validUntil,
     },
-  })
+  });
 
   async function onSubmit(data: AuthorizationFormValues) {
     startTransition(async () => {
-      const result = await updateAuthorization(authorization.id, data)
-      
+      const result = await updateAuthorization(authorization.id, data);
+
       if (result.success) {
-        toast.success("Autorización actualizada")
-        onOpenChange(false)
+        toast.success("Autorización actualizada");
+        onOpenChange(false);
       } else {
-        toast.error(result.error)
+        toast.error(result.error);
       }
-    })
+    });
   }
 
   return (
@@ -98,11 +109,17 @@ export function EditAuthorizationDialog({ authorization, open, onOpenChange }: E
                 <FormItem>
                   <FormLabel>Total Sesiones</FormLabel>
                   <FormControl>
-                    <Input 
-                        type="number" 
-                        {...field} 
-                        value={field.value as number}
-                        onChange={field.onChange}
+                    <Input
+                      type="number"
+                      {...field}
+                      value={field.value}
+                      onChange={(e) => {
+                        const value =
+                          e.target.value === ""
+                            ? 0
+                            : parseInt(e.target.value, 10);
+                        field.onChange(value);
+                      }}
                     />
                   </FormControl>
                   <FormMessage />
@@ -112,29 +129,44 @@ export function EditAuthorizationDialog({ authorization, open, onOpenChange }: E
 
             {/* Fechas (Simplificado para el ejemplo, usa el mismo Popover que AddModal) */}
             <div className="grid grid-cols-2 gap-4">
-                <FormField
-                    control={form.control}
-                    name="validUntil"
-                    render={({ field }) => (
-                        <FormItem className="flex flex-col">
-                            <FormLabel>Vence</FormLabel>
-                            <Popover>
-                                <PopoverTrigger asChild>
-                                    <FormControl>
-                                        <Button variant={"outline"} className={cn("pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                            {field.value ? format(field.value, "dd/MM/yyyy") : <span>Elegir</span>}
-                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                        </Button>
-                                    </FormControl>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-auto p-0" align="start">
-                                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
-                                </PopoverContent>
-                            </Popover>
-                            <FormMessage />
-                        </FormItem>
-                    )}
-                />
+              <FormField
+                control={form.control}
+                name="validUntil"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Vence</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground",
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "dd/MM/yyyy")
+                            ) : (
+                              <span>Elegir</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
 
             <DialogFooter>
@@ -147,5 +179,5 @@ export function EditAuthorizationDialog({ authorization, open, onOpenChange }: E
         </Form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

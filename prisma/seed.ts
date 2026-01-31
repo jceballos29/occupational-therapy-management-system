@@ -3,6 +3,7 @@ import {
   AppointmentType,
   AuthorizationStatus,
   DocumentType,
+  Gender,
   PatientType,
   PrismaClient,
   UserRole,
@@ -15,7 +16,7 @@ const prisma = new PrismaClient({
 }).$extends(withAccelerate());
 
 async function main() {
-  console.log("🌱 Iniciando seeding v4 (Con Particular + Tipos de Tarifa)...");
+  console.log("🌱 Iniciando seeding v5 (Con Gender y Speciality)...");
 
   // 1. LIMPIEZA
   await prisma.payment.deleteMany();
@@ -27,25 +28,72 @@ async function main() {
   await prisma.doctor.deleteMany();
   await prisma.user.deleteMany();
 
-  // 2. DOCTOR
-  const doctorUser = await prisma.user.create({
-    data: {
+  // 2. DOCTORES
+  const doctorsData = [
+    {
       email: "doctor@terapia.com",
       name: "Dr. Juan Pérez",
-      password: "password123",
-      role: UserRole.DOCTOR,
-    },
-  });
-
-  const doctor = await prisma.doctor.create({
-    data: {
       firstName: "Juan",
       lastName: "Pérez",
-      userId: doctorUser.id,
+      speciality: "Terapia Ocupacional Pediátrica",
       colorCode: "#2563eb",
       phone: "3001234567",
     },
-  });
+    {
+      email: "maria.rodriguez@terapia.com",
+      name: "Dra. María Rodríguez",
+      firstName: "María",
+      lastName: "Rodríguez",
+      speciality: "Terapia Ocupacional Geriátrica",
+      colorCode: "#dc2626",
+      phone: "3009876543",
+    },
+    {
+      email: "carlos.sanchez@terapia.com",
+      name: "Dr. Carlos Sánchez",
+      firstName: "Carlos",
+      lastName: "Sánchez",
+      speciality: "Rehabilitación Neurológica",
+      colorCode: "#16a34a",
+      phone: "3005551234",
+    },
+    {
+      email: "ana.garcia@terapia.com",
+      name: "Dra. Ana García",
+      firstName: "Ana",
+      lastName: "García",
+      speciality: "Terapia de Mano y Miembro Superior",
+      colorCode: "#9333ea",
+      phone: "3007778888",
+    },
+  ];
+
+  const doctors = [];
+  for (const docData of doctorsData) {
+    const user = await prisma.user.create({
+      data: {
+        email: docData.email,
+        name: docData.name,
+        password: "password123",
+        role: UserRole.DOCTOR,
+      },
+    });
+
+    const doctor = await prisma.doctor.create({
+      data: {
+        firstName: docData.firstName,
+        lastName: docData.lastName,
+        speciality: docData.speciality,
+        userId: user.id,
+        colorCode: docData.colorCode,
+        phone: docData.phone,
+      },
+    });
+
+    doctors.push(doctor);
+  }
+
+  console.log(`✅ ${doctors.length} doctores creados`);
 
   // 3. ASEGURADORAS
 
@@ -55,6 +103,7 @@ async function main() {
       name: "Particular",
       nit: null,
       active: true,
+      isPrivate: true,
     },
   });
 
@@ -163,8 +212,9 @@ async function main() {
       last: "Particular",
       doc: "123456789",
       docType: DocumentType.CC,
+      gender: Gender.FEMALE,
       type: PatientType.PRIVATE,
-      insurer: particular.id, // ✅ Ahora usa insurerId en vez de null
+      insurer: particular.id,
       auth: null,
     },
     {
@@ -172,6 +222,7 @@ async function main() {
       last: "López",
       doc: "111222333",
       docType: DocumentType.TI,
+      gender: Gender.MALE,
       type: PatientType.INSURANCE_COPAY,
       insurer: sura.id,
       auth: { total: 10, used: 2 },
@@ -181,6 +232,7 @@ async function main() {
       last: "Gómez",
       doc: "555666777",
       docType: DocumentType.CC,
+      gender: Gender.FEMALE,
       type: PatientType.INSURANCE_PACKAGE,
       insurer: sura.id,
       auth: { total: 20, used: 5 },
@@ -190,8 +242,9 @@ async function main() {
       last: "Extranjero",
       doc: "E-555999",
       docType: DocumentType.CE,
+      gender: Gender.MALE,
       type: PatientType.PRIVATE,
-      insurer: particular.id, // ✅ Particular
+      insurer: particular.id,
       auth: null,
     },
     {
@@ -199,6 +252,7 @@ async function main() {
       last: "Martínez",
       doc: "999888777",
       docType: DocumentType.PT,
+      gender: Gender.MALE,
       type: PatientType.INSURANCE_PACKAGE,
       insurer: bolivar.id,
       auth: { total: 5, used: 0 },
@@ -208,25 +262,30 @@ async function main() {
       last: "Sánchez",
       doc: "444555666",
       docType: DocumentType.CC,
+      gender: Gender.FEMALE,
       type: PatientType.INSURANCE_COPAY,
       insurer: sanitas.id,
       auth: { total: 8, used: 3 },
     },
   ];
 
-  for (const p of patientsData) {
+  for (let i = 0; i < patientsData.length; i++) {
+    const p = patientsData[i];
+    const assignedDoctor = doctors[i % doctors.length];
+
     const patient = await prisma.patient.create({
       data: {
         firstName: p.name,
         lastName: p.last,
         documentId: p.doc,
         documentType: p.docType,
+        gender: p.gender,
         email: `${p.name.toLowerCase()}@demo.com`,
         phone: "3000000000",
         birthDate: new Date("1995-05-20"),
         type: p.type,
-        insurerId: p.insurer, // ✅ Siempre tiene insurerId
-        treatingDoctorId: doctor.id,
+        insurerId: p.insurer,
+        treatingDoctorId: assignedDoctor.id,
       },
     });
 
@@ -255,26 +314,26 @@ async function main() {
       });
 
       // Crear citas COMPLETED que coincidan con usedSessions
-      for (let i = 0; i < p.auth.used; i++) {
-        const daysAgo = (p.auth.used - i) * 7; // Una cita por semana
+      for (let j = 0; j < p.auth.used; j++) {
+        const daysAgo = (p.auth.used - j) * 7; // Una cita por semana
         const appointmentDate = new Date();
         appointmentDate.setDate(appointmentDate.getDate() - daysAgo);
-        appointmentDate.setHours(9 + i, 0, 0, 0); // Horario de 9am en adelante
+        appointmentDate.setHours(9 + j, 0, 0, 0); // Horario de 9am en adelante
 
         await prisma.appointment.create({
           data: {
             patientId: patient.id,
-            doctorId: doctor.id,
+            doctorId: assignedDoctor.id,
             authorizationId: authorization.id,
             startTime: appointmentDate,
             endTime: new Date(appointmentDate.getTime() + 45 * 60000), // 45 minutos
             type:
-              i === 0 ? AppointmentType.FIRST_TIME : AppointmentType.FOLLOW_UP,
+              j === 0 ? AppointmentType.FIRST_TIME : AppointmentType.FOLLOW_UP,
             status: AppointmentStatus.COMPLETED,
             priceTotal: patientTariff?.costTotal || 0,
             priceCopay: patientTariff?.copayAmount || 0,
             priceInsurer: patientTariff?.insurerAmount || 0,
-            notes: `Sesión ${i + 1} de ${p.auth.total} - Completada`,
+            notes: `Sesión ${j + 1} de ${p.auth.total} - Completada`,
           },
         });
       }
@@ -287,7 +346,7 @@ async function main() {
       await prisma.appointment.create({
         data: {
           patientId: patient.id,
-          doctorId: doctor.id,
+          doctorId: assignedDoctor.id,
           authorizationId: null, // Particulares no tienen autorización
           startTime: appointmentDate,
           endTime: new Date(appointmentDate.getTime() + 45 * 60000),

@@ -1,6 +1,6 @@
 import { PrismaClient } from './generated/prisma/client'
 import { withAccelerate } from '@prisma/extension-accelerate'
-import 'dotenv/config'
+import "dotenv/config";
 
 const globalForPrisma = global as unknown as {
     prisma: PrismaClient

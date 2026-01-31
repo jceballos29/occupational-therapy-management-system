@@ -1,4 +1,4 @@
-import { AppointmentStatus, AppointmentType, DocumentType } from "@/lib/generated/prisma/enums"
+import { AppointmentStatus, AppointmentType, DocumentType, Gender } from "@/lib/generated/prisma/enums"
 
 export const DOCUMENT_TYPES_MAP: Record<DocumentType, string> = {
   CC: "Cédula de Ciudadanía",
@@ -80,4 +80,10 @@ export const statusLabels: Record<AppointmentStatus, string> = {
   COMPLETED: "Asistida",
   CANCELLED: "Cancelada",
   NO_SHOW: "No Asistió"
+}
+
+export const genderLabels: Record<Gender, string> = {
+  MALE: "Masculino",
+  FEMALE: "Femenino",
+  OTHER: "Otro"
 }

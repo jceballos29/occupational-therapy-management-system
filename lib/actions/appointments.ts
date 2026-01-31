@@ -6,7 +6,6 @@ import { revalidatePath } from "next/cache"
 import { AppointmentStatus } from "../generated/prisma/enums"
 
 
-// 1. CREAR CITA
 export async function createAppointment(data: AppointmentFormValues) {
   const result = appointmentSchema.safeParse(data)
   

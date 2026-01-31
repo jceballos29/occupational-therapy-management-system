@@ -28,7 +28,7 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
   Calendar,
-  FileText,
+  FileUser,
   IdCard,
   Mail,
   Phone,
@@ -38,16 +38,13 @@ import {
 } from "lucide-react";
 import { EditPatientModal } from "./edit-patient-modal";
 import { useState } from "react";
-import type {
-  PatientForInfoSheet,
-  DoctorListItem,
-  InsurerListItem,
-} from "@/types/patient";
+import type { PatientForInfoSheet } from "@/types/patient";
+import { Doctor, Insurer } from "@/lib/generated/prisma/browser";
 
 interface PatientInfoSheetProps {
   patient: PatientForInfoSheet;
-  insurers: InsurerListItem[];
-  doctors: DoctorListItem[];
+  insurers: Insurer[];
+  doctors: Doctor[];
 }
 
 export function PatientInfoSheet({
@@ -61,7 +58,7 @@ export function PatientInfoSheet({
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         <Button size="sm" variant="outline">
-          <FileText className="h-4 w-4" />
+          <FileUser className="h-4 w-4" />
           Ver Información
         </Button>
       </SheetTrigger>

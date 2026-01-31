@@ -83,7 +83,7 @@ function ActionsCell({
     const res = await updateAppointmentStatus(
       appointment.id,
       status,
-      appointment.patientId
+      appointment.patientId,
     );
     if (res.success) toast.success("Estado actualizado");
     else toast.error("Error al actualizar");
@@ -91,7 +91,7 @@ function ActionsCell({
 
   const handleDelete = async () => {
     const res = await deleteAppointment(appointment.id, appointment.patientId);
-    if (res.success) toast.success("Cita eliminada");
+    if (res.success) toast.success("Sesión eliminada");
     else toast.error(res.error);
     setDeleteOpen(false);
   };
@@ -111,13 +111,13 @@ function ActionsCell({
           {appointment.status === AppointmentStatus.SCHEDULED && (
             <>
               <DropdownMenuItem onClick={() => setEditOpen(true)}>
-                <Edit className="mr-2 h-4 w-4" /> Editar Cita
+                <Edit className="mr-2 h-4 w-4" /> Editar Sesión
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => setDeleteOpen(true)}
                 className="text-red-600"
               >
-                <Trash2 className="mr-2 h-4 w-4" /> Eliminar Cita
+                <Trash2 className="mr-2 h-4 w-4" /> Eliminar Sesión
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
@@ -129,7 +129,8 @@ function ActionsCell({
               <DropdownMenuItem
                 onClick={() => handleStatus(AppointmentStatus.CANCELLED)}
               >
-                <XCircle className="mr-2 h-4 w-4 text-red-600" /> Cancelar Cita
+                <XCircle className="mr-2 h-4 w-4 text-red-600" /> Cancelar
+                Sesión
               </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => handleStatus(AppointmentStatus.NO_SHOW)}
@@ -185,10 +186,10 @@ function ActionsCell({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-red-600" />
-              ¿Eliminar cita?
+              ¿Eliminar Sesión?
             </AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. La cita será eliminada
+              Esta acción no se puede deshacer. La sesión será eliminada
               permanentemente del sistema.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -209,7 +210,7 @@ function ActionsCell({
 
 export function getColumns(
   doctors: { id: string; firstName: string; lastName: string }[],
-  patientType: PatientType
+  patientType: PatientType,
 ): ColumnDef<AppointmentWithDoctor>[] {
   return [
     {

@@ -42,15 +42,17 @@ import { cn } from "@/lib/utils";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filters?: React.ReactNode; // Slot para filtros externos
 }
 
 export function AppointmentsDataTable<TData, TValue>({
   columns,
   data,
+  filters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
+    [],
   );
 
   const table = useReactTable({
@@ -67,7 +69,7 @@ export function AppointmentsDataTable<TData, TValue>({
       columnFilters,
     },
     initialState: {
-      pagination: { pageSize: 5 },
+      pagination: { pageSize: 10 },
     },
   });
 
@@ -79,53 +81,13 @@ export function AppointmentsDataTable<TData, TValue>({
 
   // Lógica para no mostrar 100 botones si hay muchas páginas (Muestra ventana de 5)
   const visiblePages = pageNumbers.filter(
-    (p) => p >= pageIndex - 2 && p <= pageIndex + 2
+    (p) => p >= pageIndex - 2 && p <= pageIndex + 2,
   );
 
   return (
     <div className="space-y-4">
-      {/* 1. FILTROS AVANZADOS */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        {/* Filtro por Tipo de Cita (Select en vez de Input) */}
-        <div className="flex items-center gap-2">
-          <Select
-            value={
-              (table.getColumn("type")?.getFilterValue() as string) ?? "ALL"
-            }
-            onValueChange={(value) => {
-              if (value === "ALL") table.getColumn("type")?.setFilterValue("");
-              else table.getColumn("type")?.setFilterValue(value);
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Tipo de cita" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todos los tipos</SelectItem>
-              {Object.entries(APPOINTMENT_TYPES_MAP).map(([key, label]) => (
-                <SelectItem key={key} value={key}>
-                  {label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-
-          {/* Botón para limpiar filtros si hay alguno activo */}
-          {columnFilters.length > 0 && (
-            <Button
-              variant="ghost"
-              onClick={() => setColumnFilters([])}
-              className="h-8 px-2 lg:px-3"
-            >
-              Reiniciar
-              <X className="ml-2 h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
-        {/* Buscador Global (Opcional, busca en todas las columnas visibles si configuras filterFn) */}
-        {/* <Input ... /> */}
-      </div>
+      {/* FILTROS EXTERNOS (si se proporcionan) */}
+      {filters && <div>{filters}</div>}
 
       {/* 2. TABLA */}
       <div className="rounded-md border bg-white overflow-hidden">
@@ -139,14 +101,14 @@ export function AppointmentsDataTable<TData, TValue>({
                     className={cn(
                       header.column.id === "actions" && "w-8",
                       header.column.id === "select" && "w-10",
-                      "font-semibold text-slate-700"
+                      "font-semibold text-slate-700",
                     )}
                   >
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -165,7 +127,7 @@ export function AppointmentsDataTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

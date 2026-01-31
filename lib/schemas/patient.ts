@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DocumentType, PatientType } from "../generated/prisma/enums";
+import { DocumentType, Gender, PatientType } from "../generated/prisma/enums";
 
 export const patientFormSchema = z.object({
   firstName: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -33,6 +33,17 @@ export const patientFormSchema = z.object({
   birthDate: z.date({
     message: "La fecha de nacimiento es requerida",
   }),
+
+  gender: z.enum(
+    [
+      Gender.MALE,
+      Gender.FEMALE,
+      Gender.OTHER,
+    ],
+    {
+      message: "Selecciona un género",
+    },
+  ),
 
   type: z.enum(
     [

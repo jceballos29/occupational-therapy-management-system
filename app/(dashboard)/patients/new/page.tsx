@@ -1,20 +1,20 @@
-import { PatientForm } from "@/components/patients/patient-form"
-import prisma from "@/lib/prisma"
-import { UserPlus } from "lucide-react"
+import { PatientForm } from "@/components/patients/patient-form";
+import prisma from "@/lib/prisma";
+import { UserPlus } from "lucide-react";
 
 export default async function NewPatientPage() {
   // 1. Obtener datos necesarios para los Selects (Server-side fetching)
   const insurers = await prisma.insurer.findMany({
     where: { active: true },
-    select: { id: true, name: true },
-    orderBy: { name: 'asc' }
-  })
+    select: { id: true, name: true, isPrivate: true },
+    orderBy: { name: "asc" },
+  });
 
   const doctors = await prisma.doctor.findMany({
     where: { active: true },
     select: { id: true, firstName: true, lastName: true },
-    orderBy: { lastName: 'asc' }
-  })
+    orderBy: { lastName: "asc" },
+  });
 
   return (
     <div className="flex flex-col gap-4 p-4">
@@ -44,5 +44,5 @@ export default async function NewPatientPage() {
       </div>
       <PatientForm insurers={insurers} doctors={doctors} />
     </div>
-  )
+  );
 }

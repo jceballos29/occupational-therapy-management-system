@@ -40,11 +40,13 @@ import { cn } from "@/lib/utils";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  filters?: React.ReactNode; // Slot para filtros externos
 }
 
 export function AuthorizationsDataTable<TData, TValue>({
   columns,
   data,
+  filters,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = React.useState<SortingState>([
     { id: "validUntil", desc: false }, // Ordenar por fecha de vencimiento por defecto
@@ -67,7 +69,7 @@ export function AuthorizationsDataTable<TData, TValue>({
       columnFilters,
     },
     initialState: {
-      pagination: { pageSize: 5 },
+      pagination: { pageSize: 10 },
     },
   });
 
@@ -81,42 +83,8 @@ export function AuthorizationsDataTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      {/* FILTROS */}
-      <div className="flex flex-col sm:flex-row gap-4 justify-between">
-        <div className="flex items-center gap-2">
-          <Select
-            value={
-              (table.getColumn("status")?.getFilterValue() as string) ?? "ALL"
-            }
-            onValueChange={(value) => {
-              if (value === "ALL")
-                table.getColumn("status")?.setFilterValue("");
-              else table.getColumn("status")?.setFilterValue(value);
-            }}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Estado" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Todos los estados</SelectItem>
-              <SelectItem value="ACTIVE">Activa</SelectItem>
-              <SelectItem value="COMPLETED">Completada</SelectItem>
-              <SelectItem value="EXPIRED">Vencida</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {columnFilters.length > 0 && (
-            <Button
-              variant="ghost"
-              onClick={() => setColumnFilters([])}
-              className="h-8 px-2 lg:px-3"
-            >
-              Reiniciar
-              <X className="ml-2 h-4 w-4" />
-            </Button>
-          )}
-        </div>
-      </div>
+      {/* FILTROS EXTERNOS (si se proporcionan) */}
+      {filters && <div>{filters}</div>}
 
       {/* TABLA */}
       <div className="rounded-md border bg-white overflow-hidden">

@@ -1,204 +1,702 @@
 "use client";
 
-import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { CalendarIcon, Loader2, Save } from "lucide-react";
-import { useTransition } from "react";
-import { toast } from "sonner";
+import {
+  CalendarIcon,
+  Contact,
+  Shield,
+  SquareUser,
+  Stethoscope,
+  UserCog,
+} from "lucide-react";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+  FieldSet,
+  FieldTitle,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 
-import { patientFormSchema, PatientFormValues } from "@/lib/schemas/patient";
-import { createPatient } from "@/lib/actions/patients";
+import { DOCUMENT_TYPES_MAP, genderLabels } from "@/config/constants";
+import { Doctor, Insurer, Patient } from "@/lib/generated/prisma/browser";
 import { DocumentType, PatientType } from "@/lib/generated/prisma/enums";
-import { DOCUMENT_TYPES_MAP } from "@/config/constants";
+import { patientFormSchema, PatientFormValues } from "@/lib/schemas/patient";
 
 interface PatientFormProps {
-  insurers: { id: string; name: string }[];
-  doctors: { id: string; lastName: string; firstName: string }[];
-  onSuccess?: () => void;
-  onCancel?: () => void;
-  showCancelButton?: boolean;
+  formId: string;
+  patient?: Patient;
+  insurers: Insurer[];
+  doctors: Doctor[];
+  onSubmit: (data: PatientFormValues) => void;
+  isPending: boolean;
 }
 
 export function PatientForm({
+  formId,
+  patient,
   insurers,
   doctors,
-  onSuccess,
-  onCancel,
-  showCancelButton = true,
+  onSubmit,
+  isPending,
 }: PatientFormProps) {
-  const [isPending, startTransition] = useTransition();
-
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(patientFormSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
-      documentType: DocumentType.CC,
-      documentId: "",
-      email: "",
-      phone: "",
-      type: PatientType.PRIVATE,
-      treatingDoctorId: doctors.length === 1 ? doctors[0].id : undefined,
+      firstName: patient?.firstName || "",
+      lastName: patient?.lastName || "",
+      documentType: patient?.documentType || DocumentType.CC,
+      documentId: patient?.documentId || "",
+      email: patient?.email || "",
+      phone: patient?.phone || "",
+      birthDate: patient?.birthDate || undefined,
+      gender: patient?.gender || "MALE",
+      type: patient?.type || PatientType.PRIVATE,
+      insurerId: patient?.insurerId || "",
+      treatingDoctorId:
+        patient?.treatingDoctorId || doctors.length === 1
+          ? doctors[0].id
+          : undefined,
     },
   });
 
-  // Usar useWatch en lugar de form.watch para evitar problemas con React Compiler
-  const selectedType = useWatch({
-    control: form.control,
-    name: "type",
-    defaultValue: PatientType.PRIVATE,
-  });
+  // Watch para lógica condicional
+  const selectedType = form.watch("type");
+  const selectedInsurerId = form.watch("insurerId");
 
-  async function onSubmit(data: PatientFormValues) {
-    startTransition(async () => {
-      const result = await createPatient(data);
-      if (result?.error) {
-        toast.error(result.error);
-      } else {
-        toast.success("Paciente creado correctamente");
-        form.reset();
-        onSuccess?.();
-      }
-    });
-  }
+  // Encontrar la aseguradora seleccionada
+  const selectedInsurer = insurers.find((ins) => ins.id === selectedInsurerId);
+  const isPrivateInsurer = selectedInsurer?.isPrivate || false;
+
+  // Auto-set type to PRIVATE when private insurer is selected
+  useEffect(() => {
+    if (isPrivateInsurer && selectedType !== PatientType.PRIVATE) {
+      form.setValue("type", PatientType.PRIVATE);
+    }
+  }, [isPrivateInsurer, selectedType, form]);
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 w-full">
-        <div className="flex flex-col md:flex-row gap-6">
-          {/* COLUMNA 1: DATOS PERSONALES */}
-          <div className="flex-1 space-y-4">
-            <h3 className="text-lg font-medium">Datos Personales</h3>
+    // <form
+    //   id="patient-form"
+    //   onSubmit={form.handleSubmit(onSubmit)}
+    //   className="space-y-6"
+    // >
+    //   <FieldGroup>
+    //     {/* SECCIÓN: DATOS PERSONALES */}
+    //     <section className="space-y-4">
+    //       <div className="flex items-center gap-2 border-b pb-2">
+    //         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+    //           <User className="h-4 w-4 text-primary" />
+    //         </div>
+    //         <h3 className="font-semibold text-foreground">Datos Personales</h3>
+    //       </div>
 
-            <FormField
+    //       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+    //         <Controller
+    //           control={form.control}
+    //           name="firstName"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Nombres</FieldLabel>
+    //               <Input {...field} id={field.name} placeholder="Juan" />
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+
+    //         <Controller
+    //           control={form.control}
+    //           name="lastName"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Apellidos</FieldLabel>
+    //               <Input {...field} id={field.name} placeholder="Pérez" />
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+    //       </div>
+
+    //       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+    //         <Controller
+    //           control={form.control}
+    //           name="documentType"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Tipo de Documento</FieldLabel>
+    //               <Select
+    //                 name={field.name}
+    //                 onValueChange={field.onChange}
+    //                 defaultValue={field.value}
+    //               >
+    //                 <SelectTrigger
+    //                   id={field.name}
+    //                   aria-invalid={fieldState.invalid}
+    //                   className="w-full"
+    //                 >
+    //                   <SelectValue placeholder="Seleccionar" />
+    //                 </SelectTrigger>
+    //                 <SelectContent>
+    //                   {Object.entries(DOCUMENT_TYPES_MAP).map(
+    //                     ([key, label]) => (
+    //                       <SelectItem key={key} value={key}>
+    //                         {key} - {label}
+    //                       </SelectItem>
+    //                     ),
+    //                   )}
+    //                 </SelectContent>
+    //               </Select>
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+
+    //         <Controller
+    //           control={form.control}
+    //           name="documentId"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Número de Documento</FieldLabel>
+    //               <Input {...field} id={field.name} placeholder="123456789" />
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+    //       </div>
+
+    //       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+    //         <Controller
+    //           control={form.control}
+    //           name="birthDate"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Fecha de Nacimiento</FieldLabel>
+    //               <Popover>
+    //                 <PopoverTrigger asChild>
+    //                   <Button
+    //                     variant={"outline"}
+    //                     className={cn(
+    //                       "w-full pl-3 text-left font-normal",
+    //                       !field.value && "text-muted-foreground",
+    //                     )}
+    //                   >
+    //                     {field.value ? (
+    //                       format(field.value, "PPP", { locale: es })
+    //                     ) : (
+    //                       <span>Seleccionar</span>
+    //                     )}
+    //                     <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+    //                   </Button>
+    //                 </PopoverTrigger>
+    //                 <PopoverContent className="w-auto p-0" align="start">
+    //                   <Calendar
+    //                     mode="single"
+    //                     selected={field.value}
+    //                     onSelect={field.onChange}
+    //                     disabled={(date) =>
+    //                       date > new Date() || date < new Date("1900-01-01")
+    //                     }
+    //                     captionLayout="dropdown"
+    //                   />
+    //                 </PopoverContent>
+    //               </Popover>
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+
+    //         <Controller
+    //           control={form.control}
+    //           name="gender"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Género</FieldLabel>
+    //               <Select
+    //                 name={field.name}
+    //                 onValueChange={field.onChange}
+    //                 defaultValue={field.value}
+    //               >
+    //                 <SelectTrigger
+    //                   id={field.name}
+    //                   aria-invalid={fieldState.invalid}
+    //                   className="w-full"
+    //                 >
+    //                   <SelectValue placeholder="Seleccionar" />
+    //                 </SelectTrigger>
+    //                 <SelectContent>
+    //                   {Object.entries(genderLabels).map(([key, label]) => (
+    //                     <SelectItem key={key} value={key}>
+    //                       {label}
+    //                     </SelectItem>
+    //                   ))}
+    //                 </SelectContent>
+    //               </Select>
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+    //       </div>
+    //     </section>
+
+    //     <Separator />
+
+    //     {/* SECCIÓN: CONTACTO */}
+    //     <section className="space-y-4">
+    //       <div className="flex items-center gap-2 border-b pb-2">
+    //         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent">
+    //           <User className="h-4 w-4 text-accent-foreground" />
+    //         </div>
+    //         <h3 className="font-semibold text-foreground">
+    //           Información de Contacto
+    //         </h3>
+    //       </div>
+
+    //       <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+    //         <Controller
+    //           control={form.control}
+    //           name="phone"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Teléfono / Celular</FieldLabel>
+    //               <Input
+    //                 {...field}
+    //                 id={field.name}
+    //                 placeholder="300 123 4567"
+    //               />
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+
+    //         <Controller
+    //           control={form.control}
+    //           name="email"
+    //           render={({ field, fieldState }) => (
+    //             <Field data-invalid={fieldState.invalid}>
+    //               <FieldLabel>Email (Opcional)</FieldLabel>
+    //               <Input
+    //                 {...field}
+    //                 id={field.name}
+    //                 type="email"
+    //                 placeholder="correo@ejemplo.com"
+    //               />
+    //               {fieldState.invalid && (
+    //                 <FieldError errors={[fieldState.error]} />
+    //               )}
+    //             </Field>
+    //           )}
+    //         />
+    //       </div>
+    //     </section>
+
+    //     <Separator />
+
+    //     {/* SECCIÓN: MÉDICO TRATANTE */}
+    //     <section className="space-y-4">
+    //       <div className="flex items-center gap-2 border-b pb-2">
+    //         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-50">
+    //           <Stethoscope className="h-4 w-4 text-blue-600" />
+    //         </div>
+    //         <h3 className="font-semibold text-foreground">Médico Tratante</h3>
+    //       </div>
+
+    //       <Controller
+    //         control={form.control}
+    //         name="treatingDoctorId"
+    //         render={({ field, fieldState }) => (
+    //           <Field data-invalid={fieldState.invalid}>
+    //             <Select
+    //               name={field.name}
+    //               onValueChange={field.onChange}
+    //               defaultValue={field.value}
+    //             >
+    //               <SelectTrigger
+    //                 id={field.name}
+    //                 aria-invalid={fieldState.invalid}
+    //                 className="w-full"
+    //               >
+    //                 <SelectValue placeholder="Seleccionar doctor">
+    //                   {field.value && (
+    //                     <div className="flex items-center gap-2">
+    //                       <div
+    //                         className="w-4 h-4 rounded-full"
+    //                         style={{
+    //                           backgroundColor:
+    //                             doctors.find((d) => d.id === field.value)
+    //                               ?.colorCode || "gray",
+    //                         }}
+    //                       />
+    //                       <span className="font-medium">
+    //                         Dr.{" "}
+    //                         {
+    //                           doctors.find((d) => d.id === field.value)
+    //                             ?.firstName
+    //                         }{" "}
+    //                         {
+    //                           doctors.find((d) => d.id === field.value)
+    //                             ?.lastName
+    //                         }
+    //                       </span>
+    //                     </div>
+    //                   )}
+    //                 </SelectValue>
+    //               </SelectTrigger>
+    //               <SelectContent>
+    //                 {doctors.map((doctor) => (
+    //                   <SelectItem key={doctor.id} value={doctor.id}>
+    //                     <div className="flex flex-col">
+    //                       <div className="flex items-center gap-2">
+    //                         <div
+    //                           className="w-4 h-4 rounded-full"
+    //                           style={{
+    //                             backgroundColor: doctor.colorCode || "gray",
+    //                           }}
+    //                         />
+    //                         <span className="font-medium">
+    //                           Dr. {doctor.firstName} {doctor.lastName}
+    //                         </span>
+    //                       </div>
+    //                       <span className="text-xs text-muted-foreground">
+    //                         Terapeuta de Ocupación
+    //                       </span>
+    //                     </div>
+    //                   </SelectItem>
+    //                 ))}
+    //               </SelectContent>
+    //             </Select>
+    //             {fieldState.invalid && (
+    //               <FieldError errors={[fieldState.error]} />
+    //             )}
+    //           </Field>
+    //         )}
+    //       />
+    //     </section>
+
+    //     <Separator />
+
+    //     {/* SECCIÓN: ASEGURADORA */}
+    //     <section className="space-y-4">
+    //       <div className="flex items-center gap-2 border-b pb-2">
+    //         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+    //           <Shield className="h-4 w-4 text-primary" />
+    //         </div>
+    //         <h3 className="font-semibold text-foreground">Aseguradora</h3>
+    //       </div>
+
+    //       <Controller
+    //         control={form.control}
+    //         name="insurerId"
+    //         render={({ field, fieldState }) => (
+    //           <Field data-invalid={fieldState.invalid}>
+    //             <Select
+    //               name={field.name}
+    //               onValueChange={field.onChange}
+    //               defaultValue={field.value}
+    //             >
+    //               <SelectTrigger
+    //                 id={field.name}
+    //                 aria-invalid={fieldState.invalid}
+    //                 className="w-full"
+    //               >
+    //                 <SelectValue placeholder="Seleccionar aseguradora" />
+    //               </SelectTrigger>
+    //               <SelectContent>
+    //                 {/* Grupo de aseguradoras privadas */}
+    //                 <SelectGroup>
+    //                   <SelectLabel>Privado</SelectLabel>
+    //                   {insurers
+    //                     .filter((ins) => ins.isPrivate)
+    //                     .map((ins) => (
+    //                       <SelectItem key={ins.id} value={ins.id}>
+    //                         {ins.name}
+    //                       </SelectItem>
+    //                     ))}
+    //                 </SelectGroup>
+
+    //                 {/* Grupo de aseguradoras de salud */}
+    //                 <SelectGroup>
+    //                   <SelectLabel>Empresas de Salud</SelectLabel>
+    //                   {insurers
+    //                     .filter((ins) => !ins.isPrivate)
+    //                     .map((ins) => (
+    //                       <SelectItem key={ins.id} value={ins.id}>
+    //                         {ins.name}
+    //                       </SelectItem>
+    //                     ))}
+    //                 </SelectGroup>
+    //               </SelectContent>
+    //             </Select>
+    //             {fieldState.invalid && (
+    //               <FieldError errors={[fieldState.error]} />
+    //             )}
+    //           </Field>
+    //         )}
+    //       />
+    //     </section>
+
+    //     {/* SECCIÓN: TIPO DE CONVENIO (solo si NO es aseguradora privada) */}
+    //     {!isPrivateInsurer && (
+    //       <section className="space-y-4">
+    //         <div className="flex items-center gap-2 border-b pb-2">
+    //           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary">
+    //             <UserCog className="h-4 w-4 text-secondary-foreground" />
+    //           </div>
+    //           <h3 className="font-semibold text-foreground">
+    //             Tipo de Convenio
+    //           </h3>
+    //         </div>
+
+    //         <Controller
+    //           control={form.control}
+    //           name="type"
+    //           render={({ field, fieldState }) => {
+    //             const isInvalid = fieldState.invalid;
+    //             return (
+    //               <FieldSet data-invalid={isInvalid}>
+    //                 <RadioGroup
+    //                   name={field.name}
+    //                   value={field.value}
+    //                   onValueChange={field.onChange}
+    //                   aria-invalid={isInvalid}
+    //                 >
+    //                   <FieldLabel htmlFor={field.name}>
+    //                     <Field orientation="horizontal">
+    //                       <FieldContent>
+    //                         <FieldTitle>Copago</FieldTitle>
+    //                         <FieldDescription>
+    //                           El paciente paga el copago de la sesión y el resto
+    //                           se paga a la empresa de salud
+    //                         </FieldDescription>
+    //                       </FieldContent>
+    //                       <RadioGroupItem
+    //                         value={PatientType.INSURANCE_COPAY}
+    //                         id={PatientType.INSURANCE_COPAY}
+    //                       />
+    //                     </Field>
+    //                   </FieldLabel>
+    //                   <FieldLabel htmlFor={field.name}>
+    //                     <Field orientation="horizontal">
+    //                       <FieldContent>
+    //                         <FieldTitle>Paquete</FieldTitle>
+    //                         <FieldDescription>
+    //                           La empresa de salud paga la totalidad del paquete
+    //                           de sesiones
+    //                         </FieldDescription>
+    //                       </FieldContent>
+    //                       <RadioGroupItem
+    //                         value={PatientType.INSURANCE_PACKAGE}
+    //                         id={PatientType.INSURANCE_PACKAGE}
+    //                       />
+    //                     </Field>
+    //                   </FieldLabel>
+    //                 </RadioGroup>
+    //                 {isInvalid && <FieldError errors={[fieldState.error]} />}
+    //               </FieldSet>
+    //             );
+    //           }}
+    //         />
+    //       </section>
+    //     )}
+    //   </FieldGroup>
+
+    //   <div className="flex justify-end gap-4 pt-4">
+    //     {showCancelButton && (
+    //       <Button
+    //         variant="outline"
+    //         type="button"
+    //         onClick={onCancel || (() => window.history.back())}
+    //         disabled={isPending}
+    //       >
+    //         Cancelar
+    //       </Button>
+    //     )}
+    //     <Button type="submit" disabled={isPending} size="sm">
+    //       {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+    //       <Save className="h-4 w-4" />
+    //       Guardar Paciente
+    //     </Button>
+    //   </div>
+    // </form>
+    <form
+      id={formId}
+      onSubmit={form.handleSubmit(onSubmit)}
+      className="space-y-6 px-6 pb-6"
+    >
+      <FieldGroup>
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-200">
+              <SquareUser className="h-4 w-4 text-indigo-600" />
+            </div>
+            <h3 className="font-semibold text-foreground">Datos personales</h3>
+          </div>
+
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+            <Controller
               control={form.control}
               name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Nombres</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Juan" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Nombres</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
               name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Apellidos</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Pérez" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Apellidos</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-
-            <FormField
+          </div>
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+            <Controller
               control={form.control}
               name="documentType"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Documento</FormLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Tipo Documento</FieldLabel>
                   <Select
+                    name={field.name}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
-                    <FormControl>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecciona..." />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger
+                      id={field.name}
+                      aria-invalid={fieldState.invalid}
+                      disabled={isPending}
+                      className="w-full"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {Object.entries(DOCUMENT_TYPES_MAP).map(
                         ([key, label]) => (
                           <SelectItem key={key} value={key}>
-                            {key} - {label}
+                            {label}
                           </SelectItem>
                         ),
                       )}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
-
-            <FormField
+            <Controller
               control={form.control}
               name="documentId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Número de Documento</FormLabel>
-                  <FormControl>
-                    <Input placeholder="123456789" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Número Documento</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
+          </div>
 
-            <FormField
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+            <Controller
               control={form.control}
               name="birthDate"
-              render={({ field }) => (
-                <FormItem className="flex flex-col">
-                  <FormLabel>Fecha de Nacimiento</FormLabel>
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Fecha de Nacimiento</FieldLabel>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <FormControl>
-                        <Button
-                          variant={"outline"}
-                          className={cn(
-                            "w-full pl-3 text-left font-normal",
-                            !field.value && "text-muted-foreground",
-                          )}
-                        >
-                          {field.value ? (
-                            format(field.value, "PPP", { locale: es })
-                          ) : (
-                            <span>Seleccionar fecha</span>
-                          )}
-                          <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                        </Button>
-                      </FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground",
+                        )}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP", { locale: es })
+                        ) : (
+                          <span>Seleccionar</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
                       <Calendar
                         mode="single"
+                        locale={es}
                         selected={field.value}
                         onSelect={field.onChange}
                         disabled={(date) =>
@@ -208,174 +706,299 @@ export function PatientForm({
                       />
                     </PopoverContent>
                   </Popover>
-                  <FormMessage />
-                </FormItem>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
 
-            <FormField
+            <Controller
               control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Teléfono / Celular</FormLabel>
-                  <FormControl>
-                    <Input placeholder="300 123 4567" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="correo@ejemplo.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          {/* SEPARATOR */}
-          {/* 
-					//  */}
-          <Separator orientation="horizontal" className="md:hidden" />
-          <Separator
-            orientation="vertical"
-            className="hidden md:block h-full bg-gray-500"
-          />
-
-          {/* COLUMNA 2: AFILIACIÓN */}
-          <div className="flex-1 space-y-4">
-            <h3 className="text-lg font-medium">Información de Afiliación</h3>
-
-            <FormField
-              control={form.control}
-              name="treatingDoctorId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Médico Tratante</FormLabel>
+              name="gender"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Género</FieldLabel>
                   <Select
+                    name={field.name}
                     onValueChange={field.onChange}
                     defaultValue={field.value}
                   >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un doctor" />
-                      </SelectTrigger>
-                    </FormControl>
+                    <SelectTrigger
+                      id={field.name}
+                      aria-invalid={fieldState.invalid}
+                      disabled={isPending}
+                      className="w-full"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
-                      {doctors.map((doc) => (
-                        <SelectItem key={doc.id} value={doc.id}>
-                          Dr. {doc.firstName} {doc.lastName}
+                      {Object.entries(genderLabels).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>
+                          {label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <FormMessage />
-                </FormItem>
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
               )}
             />
+          </div>
+        </section>
 
-            <FormField
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-200">
+              <Contact className="h-4 w-4 text-sky-600" />
+            </div>
+            <h3 className="font-semibold text-foreground">Datos de contacto</h3>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
+            <Controller
               control={form.control}
-              name="type"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Tipo de Paciente</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
+              name="phone"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Teléfono</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+            <Controller
+              control={form.control}
+              name="email"
+              render={({ field, fieldState }) => (
+                <Field data-invalid={fieldState.invalid}>
+                  <FieldLabel>Email</FieldLabel>
+                  <Input
+                    {...field}
+                    id={field.name}
+                    disabled={isPending}
+                    aria-invalid={fieldState.invalid}
+                    autoComplete="off"
+                  />
+                  {fieldState.invalid && (
+                    <FieldError errors={[fieldState.error]} />
+                  )}
+                </Field>
+              )}
+            />
+          </div>
+        </section>
+
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-200">
+              <Stethoscope className="h-4 w-4 text-emerald-600" />
+            </div>
+            <h3 className="font-semibold text-foreground">Médico tratante</h3>
+          </div>
+          <Controller
+            control={form.control}
+            name="treatingDoctorId"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <Select
+                  name={field.name}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    disabled={isPending}
+                    className="w-full"
                   >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona..." />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value={PatientType.PRIVATE}>
-                        Particular
+                    <SelectValue placeholder="Sin asignar">
+                      {field.value && (
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{
+                              backgroundColor:
+                                doctors.find((d) => d.id === field.value)
+                                  ?.colorCode || "gray",
+                            }}
+                          />
+                          <span className="font-medium">
+                            Dr.{" "}
+                            {
+                              doctors.find((d) => d.id === field.value)
+                                ?.firstName
+                            }{" "}
+                            {
+                              doctors.find((d) => d.id === field.value)
+                                ?.lastName
+                            }
+                          </span>
+                        </div>
+                      )}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {doctors.map((doctor) => (
+                      <SelectItem key={doctor.id} value={doctor.id}>
+                        <div className="flex flex-col">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-4 h-4 rounded-full"
+                              style={{
+                                backgroundColor: doctor.colorCode || "gray",
+                              }}
+                            />
+                            <span className="font-medium">
+                              Dr. {doctor.firstName} {doctor.lastName}
+                            </span>
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            Terapeuta de Ocupación
+                          </span>
+                        </div>
                       </SelectItem>
-                      <SelectItem value={PatientType.INSURANCE_COPAY}>
-                        EPS / Copago
-                      </SelectItem>
-                      <SelectItem value={PatientType.INSURANCE_PACKAGE}>
-                        Póliza / Paquete
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="insurerId"
-              render={({ field }) => {
-                // Filtrar aseguradoras según tipo
-                const filteredInsurers =
-                  selectedType === PatientType.PRIVATE
-                    ? insurers.filter((ins) => ins.name === "Particular")
-                    : insurers.filter((ins) => ins.name !== "Particular");
-
-                return (
-                  <FormItem>
-                    <FormLabel>Aseguradora</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecciona aseguradora..." />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {filteredInsurers.map((ins) => (
+                    ))}
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        </section>
+        <section className="space-y-4">
+          <div className="flex items-center gap-2 border-b pb-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+              <Shield className="h-4 w-4 text-primary" />
+            </div>
+            <h3 className="font-semibold text-foreground">Aseguradora</h3>
+          </div>
+          <Controller
+            control={form.control}
+            name="insurerId"
+            render={({ field, fieldState }) => (
+              <Field data-invalid={fieldState.invalid}>
+                <Select
+                  name={field.name}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger
+                    id={field.name}
+                    aria-invalid={fieldState.invalid}
+                    disabled={isPending}
+                    className="w-full"
+                  >
+                    <SelectValue placeholder="Seleccionar aseguradora" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {/* Grupo de aseguradoras privadas */}
+                    <SelectGroup>
+                      <SelectLabel>Privado</SelectLabel>
+                      {insurers
+                        .filter((ins) => ins.isPrivate)
+                        .map((ins) => (
                           <SelectItem key={ins.id} value={ins.id}>
                             {ins.name}
                           </SelectItem>
                         ))}
-                      </SelectContent>
-                    </Select>
-                    <FormDescription>
-                      {selectedType === PatientType.PRIVATE
-                        ? "Pacientes particulares pagan directamente."
-                        : "Selecciona la aseguradora del paciente."}
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
+                    </SelectGroup>
+
+                    {/* Grupo de aseguradoras de salud */}
+                    <SelectGroup>
+                      <SelectLabel>Empresas de Salud</SelectLabel>
+                      {insurers
+                        .filter((ins) => !ins.isPrivate)
+                        .map((ins) => (
+                          <SelectItem key={ins.id} value={ins.id}>
+                            {ins.name}
+                          </SelectItem>
+                        ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+                {fieldState.invalid && (
+                  <FieldError errors={[fieldState.error]} />
+                )}
+              </Field>
+            )}
+          />
+        </section>
+
+        {/* Solo mostrar tipo de convenio si se ha seleccionado aseguradora y NO es privada */}
+        {selectedInsurerId && !isPrivateInsurer && (
+          <section className="space-y-4">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary">
+                <UserCog className="h-4 w-4 text-secondary-foreground" />
+              </div>
+              <h3 className="font-semibold text-foreground">
+                Tipo de convenio
+              </h3>
+            </div>
+            <Controller
+              control={form.control}
+              name="type"
+              render={({ field, fieldState }) => {
+                const isInvalid = fieldState.invalid;
+                return (
+                  <FieldSet data-invalid={isInvalid}>
+                    <RadioGroup
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      aria-invalid={isInvalid}
+                    >
+                      <FieldLabel htmlFor={field.name}>
+                        <Field orientation="horizontal">
+                          <FieldContent>
+                            <FieldTitle>Copago</FieldTitle>
+                            <FieldDescription>
+                              El paciente paga el copago de la sesión y el resto
+                              se paga a la empresa de salud
+                            </FieldDescription>
+                          </FieldContent>
+                          <RadioGroupItem
+                            value={PatientType.INSURANCE_COPAY}
+                            id={PatientType.INSURANCE_COPAY}
+                          />
+                        </Field>
+                      </FieldLabel>
+                      <FieldLabel htmlFor={field.name}>
+                        <Field orientation="horizontal">
+                          <FieldContent>
+                            <FieldTitle>Paquete</FieldTitle>
+                            <FieldDescription>
+                              La empresa de salud paga la totalidad del paquete
+                              de sesiones
+                            </FieldDescription>
+                          </FieldContent>
+                          <RadioGroupItem
+                            value={PatientType.INSURANCE_PACKAGE}
+                            id={PatientType.INSURANCE_PACKAGE}
+                          />
+                        </Field>
+                      </FieldLabel>
+                    </RadioGroup>
+                    {isInvalid && <FieldError errors={[fieldState.error]} />}
+                  </FieldSet>
                 );
               }}
             />
-          </div>
-        </div>
-
-        <div className="flex justify-end gap-4">
-          {showCancelButton && (
-            <Button
-              variant="outline"
-              type="button"
-              onClick={onCancel || (() => window.history.back())}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-          )}
-          <Button type="submit" disabled={isPending} size="sm">
-            {isPending && <Loader2 className="h-4 w-4 animate-spin" />}
-            <Save className="h-4 w-4" />
-            Guardar Paciente
-          </Button>
-        </div>
-      </form>
-    </Form>
+          </section>
+        )}
+      </FieldGroup>
+    </form>
   );
 }

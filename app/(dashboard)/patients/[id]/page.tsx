@@ -1,13 +1,15 @@
 import { HeaderPage } from "@/components/header-page";
 import { EditPatientModal } from "@/components/patients/edit-patient-modal";
+import { PatientBreadcrumb } from "@/components/patients/patient-breadcrumb";
 import { PatientInfoSheet } from "@/components/patients/patient-info-sheet";
 import { SectionAppointments } from "@/components/patients/section-appointments";
 import { SectionAuthorizations } from "@/components/patients/section-authorizations";
 import { SectionCards } from "@/components/patients/section-cards";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import prisma from "@/lib/prisma";
 import { getPatientById } from "@/lib/queries/patients";
-import { User } from "lucide-react";
+import { Calendar1, File, User } from "lucide-react";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -22,12 +24,10 @@ export default async function PatientProfilePage({ params }: PageProps) {
   const [insurers, doctors] = await Promise.all([
     prisma.insurer.findMany({
       where: { active: true },
-      select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
     prisma.doctor.findMany({
       where: { active: true },
-      select: { id: true, firstName: true, lastName: true },
       orderBy: { lastName: "asc" },
     }),
   ]);
@@ -51,11 +51,15 @@ export default async function PatientProfilePage({ params }: PageProps) {
 
   return (
     <div className="flex flex-col gap-4 p-4">
+      {/* Configurar breadcrumbs personalizados */}
+      <PatientBreadcrumb
+        patientName={`${patient.firstName} ${patient.lastName}`}
+        patientId={id}
+      />
+
       <HeaderPage
         title={`${patient.firstName} ${patient.lastName}`}
         icon={User}
-        backUrl="/patients"
-        backLabel="Volver a Pacientes"
         actions={
           <>
             <PatientInfoSheet
@@ -66,7 +70,7 @@ export default async function PatientProfilePage({ params }: PageProps) {
           </>
         }
       />
-      
+
       <SectionCards
         isPrivate={isPrivate}
         activeAuth={activeAuth}
@@ -75,13 +79,35 @@ export default async function PatientProfilePage({ params }: PageProps) {
         totalPaid={totalPaid}
       />
       <Separator />
-      <SectionAuthorizations
-        isPrivate={isPrivate}
-        patient={patient}
-        activeAuth={activeAuth}
-      />
-      <Separator />
-      <SectionAppointments patient={patient} doctors={doctors} />
+      <Tabs defaultValue={isPrivate ? "appointments" : "authorizations"}>
+        <TabsList>
+          {!isPrivate && (
+            <TabsTrigger value="authorizations">
+              <File className="h-5 w-5 text-muted-foreground" />
+              Autorizaciones
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="appointments">
+            <Calendar1 className="h-5 w-5 text-muted-foreground" />
+            Sesiones
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="authorizations">
+          <SectionAuthorizations
+            isPrivate={isPrivate}
+            patient={patient}
+            activeAuth={activeAuth}
+          />
+        </TabsContent>
+        <TabsContent value="appointments">
+          <SectionAppointments
+            patient={patient}
+            doctors={doctors}
+            sessionsLeft={sessionsLeft}
+            isPrivate={isPrivate}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
