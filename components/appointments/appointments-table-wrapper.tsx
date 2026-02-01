@@ -1,21 +1,13 @@
 "use client";
 
-import { AppointmentsDataTable } from "./data-table";
+import { DataTable } from "@/components/data-table";
 import { getColumns, AppointmentWithDoctor } from "./columns";
 import { PatientType } from "@/lib/generated/prisma/enums";
 import { AppointmentFilters } from "./appointment-filters";
-import { useMemo, useState } from "react";
-import {
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-  ColumnFiltersState,
-  SortingState,
-} from "@tanstack/react-table";
+import { useMemo } from "react";
 import { Doctor } from "@/lib/generated/prisma/browser";
 import { SerializedTariff } from "@/types/patient";
+import { SortingState } from "@tanstack/react-table";
 
 interface AppointmentsTableWrapperProps {
   appointments: AppointmentWithDoctor[];
@@ -23,49 +15,61 @@ interface AppointmentsTableWrapperProps {
   patientType: PatientType;
   tariffs: SerializedTariff[];
   treatingDoctor: Doctor;
+  actions?: React.ReactNode;
 }
 
-// Hook que retorna filtros y tabla por separado
+export function AppointmentsTableWrapper({
+  appointments,
+  doctors,
+  patientType,
+  tariffs,
+  treatingDoctor,
+  actions,
+}: AppointmentsTableWrapperProps) {
+  const columns = useMemo(
+    () => getColumns(doctors, patientType, tariffs, treatingDoctor),
+    [doctors, patientType, tariffs, treatingDoctor],
+  );
+
+  // Ordenar por fecha más reciente por defecto
+  const defaultSort: SortingState = [{ id: "startTime", desc: true }];
+
+  return (
+    <DataTable
+      columns={columns}
+      data={appointments}
+      filters={(table) => <AppointmentFilters table={table} />}
+      actions={actions}
+      defaultSort={defaultSort}
+    />
+  );
+}
+
+// Hook para uso externo - retorna tabla con filtros y actions integrados
 export function useAppointmentsTable({
   appointments,
   doctors,
   patientType,
   tariffs,
   treatingDoctor,
+  actions,
 }: AppointmentsTableWrapperProps) {
   const columns = useMemo(
     () => getColumns(doctors, patientType, tariffs, treatingDoctor),
     [doctors, patientType, tariffs, treatingDoctor],
   );
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
-  const table = useReactTable({
-    data: appointments,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
-    getFilteredRowModel: getFilteredRowModel(),
-    state: {
-      sorting,
-      columnFilters,
-    },
-    initialState: {
-      pagination: { pageSize: 5 },
-    },
-  });
+  const defaultSort: SortingState = [{ id: "startTime", desc: true }];
 
   return {
-    filters: <AppointmentFilters table={table} />,
-    table: <AppointmentsDataTable columns={columns} data={appointments} />,
+    table: (
+      <DataTable
+        columns={columns}
+        data={appointments}
+        filters={(table) => <AppointmentFilters table={table} />}
+        actions={actions}
+        defaultSort={defaultSort}
+      />
+    ),
   };
-}
-
-// Componente legacy para compatibilidad
-export function AppointmentsTableWrapper(props: AppointmentsTableWrapperProps) {
-  const { table } = useAppointmentsTable(props);
-  return table;
 }

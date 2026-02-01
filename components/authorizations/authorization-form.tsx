@@ -69,8 +69,8 @@ export function AuthorizationForm({
       <FieldGroup>
         {/* Alerta de autorización activa */}
         {hasActiveAuth && !authorization && (
-          <Alert className="border-rose-200 bg-rose-50 text-rose-900">
-            <AlertCircle className="h-4 w-4" />
+          <Alert className="border-primary/20 bg-primary/5 text-primary">
+            <AlertCircle className="h-4 w-4 text-primary" />
             <AlertTitle>Autorización Activa Detectada</AlertTitle>
             <AlertDescription className="mt-2">
               El paciente ya tiene un paquete activo. ¿Qué deseas hacer con el
@@ -117,8 +117,8 @@ export function AuthorizationForm({
         {/* Información del paquete */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-purple-200">
-              <FileText className="h-4 w-4 text-purple-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <FileText className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">
               Información del paquete
@@ -184,8 +184,8 @@ export function AuthorizationForm({
         {/* Vigencia */}
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-200">
-              <CalendarIcon className="h-4 w-4 text-blue-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <CalendarIcon className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Vigencia</h3>
           </div>

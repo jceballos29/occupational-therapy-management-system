@@ -50,27 +50,27 @@ export function SectionInformation({
 
   return (
     <section className="space-y-4 pt-4">
-      <Card className="shadow-none rounded-lg py-4 gap-0">
+      <Card className="rounded-lg py-4 gap-0 shadow-sm">
         <CardHeader className="px-4 pb-2">
           <CardTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-200">
-              <SquareUser className="h-4 w-4 text-indigo-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <SquareUser className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Datos Personales</h3>
           </CardTitle>
         </CardHeader>
-        <CardContent className="text-sm space-y-1 grid grid-cols-1 md:grid-cols-4 gap-2">
-          <div className="">
-            <p className="font-medium text-muted-foreground">Nombres</p>
+        <CardContent className="text-sm space-y-1 grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-4 gap-2">
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground">Nombres:</p>
             <p>{patient.firstName}</p>
           </div>
-          <div className="">
-            <p className="font-medium text-muted-foreground">Apellidos</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground">Apellidos:</p>
             <p>{patient.lastName}</p>
           </div>
-          <div className="">
+          <div className="flex items-center gap-2">
             <p className="font-medium text-muted-foreground">
-              Tipo de documento
+              Tipo de documento:
             </p>
             <Badge
               variant="outline"
@@ -82,19 +82,19 @@ export function SectionInformation({
               {DOCUMENT_TYPES_MAP[patient.documentType]}
             </Badge>
           </div>
-          <div className="">
+          <div className="flex items-center gap-2">
             <p className="font-medium text-muted-foreground">
-              Número de documento
+              Número de documento:
             </p>
             <p>{patient.documentId}</p>
           </div>
-          <div className="">
-            <p className="font-medium text-muted-foreground">Género</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground">Género:</p>
             <p>{genderLabels[patient.gender]}</p>
           </div>
-          <div className="">
+          <div className="flex items-center gap-2">
             <p className="font-medium text-muted-foreground">
-              Fecha de nacimiento
+              Fecha de nacimiento:
             </p>
             <p className="">
               {format(patient.birthDate, "PPP", { locale: es })}
@@ -102,30 +102,30 @@ export function SectionInformation({
           </div>
         </CardContent>
       </Card>
-      <Card className="shadow-none rounded-lg py-4 gap-0">
+      <Card className="rounded-lg py-4 gap-0 shadow-sm">
         <CardHeader className="px-4 pb-2">
           <CardTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-200">
-              <Contact className="h-4 w-4 text-sky-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <Contact className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Datos de contacto</h3>
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm space-y-1 grid grid-cols-1 md:grid-cols-3 gap-2">
-          <div className="">
-            <p className="font-medium text-muted-foreground">Teléfono</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground">Teléfono:</p>
             <p>{patient.phone}</p>
           </div>
-          <div className="">
-            <p className="font-medium text-muted-foreground">Email</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground">Email:</p>
             <p>{patient.email || "Sin email"}</p>
           </div>
         </CardContent>
       </Card>
-      <Card className="shadow-none rounded-lg py-4 gap-0">
+      <Card className="rounded-lg py-4 gap-0 shadow-sm">
         <CardHeader className="px-4 pb-2">
           <CardTitle className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
               <Shield className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">
@@ -134,8 +134,8 @@ export function SectionInformation({
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm space-y-1 grid grid-cols-1 md:grid-cols-3 gap-2">
-          <div className="">
-            <p className="font-medium text-muted-foreground">Médico tratante</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground">Médico tratante:</p>
             <p className="flex items-center gap-1">
               <span
                 className="w-4 h-4 rounded-full inline-block"
@@ -149,11 +149,11 @@ export function SectionInformation({
               </span>
             </p>
           </div>
-          <div className="">
-            <p className="font-medium text-muted-foreground">Aseguradora</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-muted-foreground">Aseguradora:</p>
             <p>{patient.insurer?.name || "Sin aseguradora"}</p>
           </div>
-          <div className="">
+          <div className="flex items-center gap-2">
             <p className="font-medium text-muted-foreground">
               Tipo de convenio
             </p>

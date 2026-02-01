@@ -565,8 +565,8 @@ export function PatientForm({
       <FieldGroup>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-200">
-              <SquareUser className="h-4 w-4 text-indigo-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <SquareUser className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Datos personales</h3>
           </div>
@@ -753,8 +753,8 @@ export function PatientForm({
         </section>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-200">
-              <Contact className="h-4 w-4 text-sky-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <Contact className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Datos de contacto</h3>
           </div>
@@ -803,7 +803,7 @@ export function PatientForm({
         </section>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
               <Shield className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Datos administrativos</h3>

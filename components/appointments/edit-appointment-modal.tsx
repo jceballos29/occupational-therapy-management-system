@@ -91,7 +91,7 @@ export function EditAppointmentModal({
       <DialogContent className="max-h-[90vh] max-w-3xl p-0">
         <DialogHeader className="px-6 pt-6">
           <DialogTitle className="flex items-center gap-2 text-xl">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-sm">
               <CalendarIcon className="h-4 w-4 text-primary" />
             </div>
             Editar sesión

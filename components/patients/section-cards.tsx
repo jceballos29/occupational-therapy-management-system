@@ -27,7 +27,7 @@ export function SectionCards({
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card
         className={cn(
-          "shadow-xs rounded-lg p-4 gap-0 justify-between h-auto",
+          "shadow-sm rounded-lg p-4 gap-0 justify-between h-auto",
           isPrivate ? "bg-muted text-muted-foreground" : "",
         )}
       >
@@ -44,7 +44,7 @@ export function SectionCards({
       </Card>
       <Card
         className={cn(
-          "shadow-xs rounded-lg p-4 gap-0 justify-between h-auto",
+          "shadow-sm rounded-lg p-4 gap-0 justify-between h-auto",
           isPrivate ? "bg-muted text-muted-foreground" : "",
         )}
       >
@@ -59,7 +59,7 @@ export function SectionCards({
           </CardTitle>
         </CardContent>
       </Card>
-      <Card className="shadow-xs rounded-lg p-4 gap-0 justify-between h-auto">
+      <Card className="shadow-sm rounded-lg p-4 gap-0 justify-between h-auto">
         <CardHeader className="p-0">
           <CardDescription className="font-medium text-xs">
             Sesiones Asistidas
@@ -71,7 +71,7 @@ export function SectionCards({
           </CardTitle>
         </CardContent>
       </Card>
-      <Card className="shadow-xs rounded-lg p-4 gap-0 justify-between h-auto">
+      <Card className="shadow-sm rounded-lg p-4 gap-0 justify-between h-auto">
         <CardHeader className="p-0">
           <CardDescription className="font-medium text-xs">
             Valor Total

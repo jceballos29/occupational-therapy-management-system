@@ -236,6 +236,25 @@ export function getColumns(
           </span>
         );
       },
+      filterFn: (row, id, value) => {
+        // value es un DateRange { from?: Date, to?: Date }
+        if (!value?.from) return true;
+
+        const rowDate = new Date(row.getValue(id) as string);
+        const fromDate = new Date(value.from);
+        fromDate.setHours(0, 0, 0, 0);
+
+        if (value.to) {
+          const toDate = new Date(value.to);
+          toDate.setHours(23, 59, 59, 999);
+          return rowDate >= fromDate && rowDate <= toDate;
+        }
+
+        // Solo fecha inicial
+        const endOfDay = new Date(fromDate);
+        endOfDay.setHours(23, 59, 59, 999);
+        return rowDate >= fromDate && rowDate <= endOfDay;
+      },
     },
     {
       id: "time",
@@ -282,6 +301,14 @@ export function getColumns(
             {APPOINTMENT_TYPES_MAP[type] || type}
           </Badge>
         );
+      },
+      filterFn: (row, id, value) => {
+        const rowValue = row.getValue(id) as string;
+        if (!value || value.length === 0) return true;
+        if (Array.isArray(value)) {
+          return value.includes(rowValue);
+        }
+        return rowValue === value;
       },
     },
     {

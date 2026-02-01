@@ -7,13 +7,11 @@ import { DataTable as GenericDataTable } from "@/components/data-table";
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  filters?: React.ReactNode;
 }
 
-export function AppointmentsDataTable<TData, TValue>({
+export function DataTable<TData, TValue>({
   columns,
   data,
-  filters,
 }: DataTableProps<TData, TValue>) {
-  return <GenericDataTable columns={columns} data={data} filters={filters} />;
+  return <GenericDataTable columns={columns} data={data} />;
 }

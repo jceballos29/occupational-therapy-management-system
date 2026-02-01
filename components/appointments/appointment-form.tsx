@@ -106,8 +106,8 @@ export function AppointmentForm({
       <FieldGroup>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-200">
-              <Stethoscope className="h-4 w-4 text-emerald-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <Stethoscope className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Médico tratante</h3>
             <div className="ml-auto">
@@ -232,8 +232,8 @@ export function AppointmentForm({
         </section>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-blue-200">
-              <CalendarIcon className="h-4 w-4 text-blue-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <CalendarIcon className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Fecha y hora</h3>
           </div>
@@ -304,8 +304,8 @@ export function AppointmentForm({
         </section>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-violet-200">
-              <Clock className="h-4 w-4 text-violet-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <Clock className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">
               Detalles de la sesión
@@ -418,8 +418,8 @@ export function AppointmentForm({
         </section>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-green-200">
-              <DollarSign className="h-4 w-4 text-green-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <DollarSign className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Valores</h3>
           </div>
@@ -509,8 +509,8 @@ export function AppointmentForm({
         </section>
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gray-200">
-              <FileText className="h-4 w-4 text-gray-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 border border-primary/20 shadow-xs">
+              <FileText className="h-4 w-4 text-primary" />
             </div>
             <h3 className="font-semibold text-foreground">Notas (opcional)</h3>
           </div>

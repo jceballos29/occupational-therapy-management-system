@@ -75,7 +75,7 @@ export default async function PatientProfilePage({ params }: PageProps) {
         totalPaid={totalPaid}
       />
       <Tabs defaultValue="info">
-        <TabsList variant="line">
+        <TabsList>
           <TabsTrigger value="info">
             <FileUser className="h-5 w-5 text-muted-foreground" />
             Información del paciente

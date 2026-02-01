@@ -1,9 +1,9 @@
-import { DataTable } from "@/components/data-table";
+import { PatientTableWrapper } from "@/components/patients/patient-table-wrapper";
 import { getPatients } from "@/lib/queries/patients";
 import { Users } from "lucide-react";
-import { columns } from "./columns";
 import { AddPatientModal } from "@/components/patients/add-patient-modal";
 import prisma from "@/lib/prisma";
+import { HeaderPage } from "@/components/header-page";
 
 export default async function PatientsPage() {
   // Llamada al Server Action
@@ -23,23 +23,20 @@ export default async function PatientsPage() {
   return (
     <div className="flex flex-col gap-4 p-4">
       {/* Header de la Página */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-            <Users className="h-6 w-6 text-slate-600" />
-            Pacientes
-          </h1>
-          <p className="text-slate-500">
-            Gestiona el directorio de pacientes, afiliaciones e historias
-            clínicas.
-          </p>
-        </div>
-        <AddPatientModal insurers={insurers} doctors={doctors} />
-      </div>
+      <HeaderPage
+        title="Pacientes"
+        description="Gestiona el directorio de pacientes, afiliaciones e historias clínicas."
+        icon={Users}
+      />
 
       {/* Tabla de Datos */}
       {success && patients ? (
-        <DataTable columns={columns} data={patients} />
+        <PatientTableWrapper
+          patients={patients}
+          insurers={insurers}
+          doctors={doctors}
+          actions={<AddPatientModal insurers={insurers} doctors={doctors} />}
+        />
       ) : (
         <div className="p-8 text-center text-red-500 bg-red-50 rounded-lg">
           <p>Error: {error}</p>

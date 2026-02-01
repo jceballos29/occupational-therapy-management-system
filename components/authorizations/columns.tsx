@@ -243,7 +243,12 @@ export function getAuthorizationColumns(
         );
       },
       filterFn: (row, id, value) => {
-        return value.includes(row.getValue(id));
+        const rowValue = row.getValue(id) as string;
+        if (!value || value.length === 0) return true;
+        if (Array.isArray(value)) {
+          return value.includes(rowValue);
+        }
+        return rowValue === value;
       },
     },
     {
