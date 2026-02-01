@@ -43,14 +43,20 @@ const statusLabels: Record<AuthorizationStatus, string> = {
 };
 
 // Componente de celda de acciones con estado
-function ActionsCell({ authorization }: { authorization: Authorization }) {
+function ActionsCell({
+  authorization,
+  insurerName,
+}: {
+  authorization: Authorization;
+  insurerName: string;
+}) {
   const [editOpen, setEditOpen] = useState(false);
 
   const handleStatus = async (status: AuthorizationStatus) => {
     const res = await updateAuthorizationStatus(
       authorization.id,
       status,
-      authorization.patientId
+      authorization.patientId,
     );
     if (res.success)
       toast.success(`Estado actualizado a ${statusLabels[status]}`);
@@ -97,6 +103,7 @@ function ActionsCell({ authorization }: { authorization: Authorization }) {
 
       <EditAuthorizationDialog
         authorization={authorization}
+        insurerName={insurerName}
         open={editOpen}
         onOpenChange={setEditOpen}
       />
@@ -104,7 +111,9 @@ function ActionsCell({ authorization }: { authorization: Authorization }) {
   );
 }
 
-export function getAuthorizationColumns(): ColumnDef<Authorization>[] {
+export function getAuthorizationColumns(
+  insurerName: string,
+): ColumnDef<Authorization>[] {
   return [
     {
       accessorKey: "code",
@@ -122,7 +131,11 @@ export function getAuthorizationColumns(): ColumnDef<Authorization>[] {
         );
       },
       cell: ({ row }) => {
-        return <span className="font-medium text-muted-foreground text-sm">{row.original.code}</span>;
+        return (
+          <span className="font-medium text-muted-foreground text-sm">
+            {row.original.code}
+          </span>
+        );
       },
     },
     {
@@ -235,7 +248,9 @@ export function getAuthorizationColumns(): ColumnDef<Authorization>[] {
     },
     {
       id: "actions",
-      cell: ({ row }) => <ActionsCell authorization={row.original} />,
+      cell: ({ row }) => (
+        <ActionsCell authorization={row.original} insurerName={insurerName} />
+      ),
     },
   ];
 }

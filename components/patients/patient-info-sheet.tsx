@@ -2,7 +2,6 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import {
   Sheet,
   SheetContent,
@@ -13,36 +12,30 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   DOCUMENT_TYPES_MAP,
   DOCUMENT_TYPE_COLORS,
+  genderLabels,
   patientTypeColors,
   patientTypeLabels,
 } from "@/config/constants";
+import { Doctor, Insurer, Patient } from "@/lib/generated/prisma/browser";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import {
-  Calendar,
+  Contact,
   FileUser,
-  IdCard,
-  Mail,
-  Phone,
   Shield,
-  ShieldCheck,
-  User,
+  SquareUser,
+  Stethoscope
 } from "lucide-react";
-import { EditPatientModal } from "./edit-patient-modal";
 import { useState } from "react";
-import type { PatientForInfoSheet } from "@/types/patient";
-import { Doctor, Insurer } from "@/lib/generated/prisma/browser";
+import { EditPatientModal } from "./edit-patient-modal";
 
 interface PatientInfoSheetProps {
-  patient: PatientForInfoSheet;
+  patient: Patient & {
+    insurer: Insurer | null;
+    treatingDoctor: Doctor;
+  };
   insurers: Insurer[];
   doctors: Doctor[];
 }
@@ -62,130 +55,139 @@ export function PatientInfoSheet({
           Ver Información
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-md p-0">
         <SheetHeader>
-          <SheetTitle>Información del Paciente</SheetTitle>
+          <SheetTitle className="flex items-center gap-2 text-xl">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+              <FileUser className="h-4 w-4 text-primary" />
+            </div>
+            Información del Paciente
+          </SheetTitle>
           <SheetDescription>
-            Datos personales y afiliación clínica
+            Aquí puedes ver la información del paciente y editarla si es necesario.
           </SheetDescription>
         </SheetHeader>
 
-        <div className="space-y-4 p-4">
-          {/* Datos Personales Section */}
-          <div>
-            <h3 className="text-base font-semibold mb-4">Datos Personales</h3>
-            <div className="space-y-2 text-sm">
+        <div className="px-4 space-y-4">
+          <section className="space-y-2">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-indigo-200">
+                <SquareUser className="h-4 w-4 text-indigo-600" />
+              </div>
+              <h3 className="font-semibold text-foreground">
+                Datos Personales
+              </h3>
+            </div>
+            <div className="text-sm space-y-1">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">Nombre</p>
-                </div>
+                <p className="font-medium">Nombre</p>
                 <p className="text-muted-foreground">
                   {patient.firstName} {patient.lastName}
                 </p>
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <IdCard className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">Documento</p>
-                </div>
-                <div className="flex items-center gap-1">
-                  <p className="text-muted-foreground">{patient.documentId}</p>
-                  <TooltipProvider>
-                    <Tooltip delayDuration={300}>
-                      <TooltipTrigger asChild>
-                        <Badge
-                          variant="outline"
-                          className={`flex items-center justify-center leading-none font-mono text-[10px] px-2 py-0.5 cursor-help ${
-                            DOCUMENT_TYPE_COLORS[patient.documentType] ||
-                            "bg-slate-100"
-                          }`}
-                        >
-                          {patient.documentType}
-                        </Badge>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{DOCUMENT_TYPES_MAP[patient.documentType]}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
+                <p className="font-medium">Tipo de documento</p>
+                <Badge
+                  variant="outline"
+                  className={`flex items-center justify-center leading-none px-2 py-0.5 ${
+                    DOCUMENT_TYPE_COLORS[patient.documentType] || "bg-slate-100"
+                  }`}
+                >
+                  {DOCUMENT_TYPES_MAP[patient.documentType]}
+                </Badge>
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Phone className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">Teléfono</p>
-                </div>
-                <p className="text-muted-foreground">{patient.phone}</p>
+                <p className="font-medium">Número de documento</p>
+                <p className="text-muted-foreground">{patient.documentId}</p>
               </div>
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">Email</p>
-                </div>
-                <p className="text-muted-foreground">
-                  {patient.email || "Sin email"}
-                </p>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">Nacimiento</p>
-                </div>
+                <p className="font-medium">Fecha de nacimiento</p>
                 <p className="text-muted-foreground">
                   {format(patient.birthDate, "PPP", { locale: es })}
                 </p>
               </div>
-            </div>
-          </div>
-
-          <Separator />
-
-          {/* Afiliación Clínica Section */}
-          <div>
-            <h3 className="text-base font-semibold mb-4">Afiliación Clínica</h3>
-            <div className="space-y-2 text-sm">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Shield className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">Aseguradora</p>
-                </div>
+                <p className="font-medium">Género</p>
                 <p className="text-muted-foreground">
-                  {patient.insurer ? patient.insurer.name : "Sin Aseguradora"}
+                  {genderLabels[patient.gender]}
                 </p>
               </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <ShieldCheck className="h-4 w-4 text-muted-foreground" />
-                  <p className="font-medium">Afiliación</p>
-                </div>
-                <Badge
-                  className={patientTypeColors[patient.type]}
-                  variant="outline"
-                >
-                  {patientTypeLabels[patient.type] || patient.type}
-                </Badge>
+            </div>
+          </section>
+          <section className="space-y-2">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-200">
+                <Contact className="h-4 w-4 text-sky-600" />
               </div>
-              {patient.treatingDoctor && (
+              <h3 className="font-semibold text-foreground">
+                Datos de contacto
+              </h3>
+            </div>
+            <div className="text-sm space-y-1">
+              <div className="flex items-center justify-between">
+                <p className="font-medium">Teléfono</p>
+                <p className="text-muted-foreground">{patient.phone}</p>
+              </div>
+              <div className="flex items-center justify-between">
+                <p className="font-medium">Email</p>
+                <p className="text-muted-foreground">
+                  {patient.email || "Sin email"}
+                </p>
+              </div>
+            </div>
+          </section>
+          <section className="space-y-2">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-200">
+                <Stethoscope className="h-4 w-4 text-emerald-600" />
+              </div>
+              <h3 className="font-semibold text-foreground">Médico tratante</h3>
+            </div>
+            <div className="flex items-center gap-2">
+              <div
+                className="w-4 h-4 rounded-full"
+                style={{
+                  backgroundColor: patient.treatingDoctor.colorCode || "gray",
+                }}
+              />
+              <span className="font-medium text-sm">
+                Dr. {patient.treatingDoctor.firstName}{" "}
+                {patient.treatingDoctor.lastName}
+              </span>
+              <span className="ml-auto text-sm text-muted-foreground">
+                {patient.treatingDoctor.speciality}
+              </span>
+            </div>
+          </section>
+          <section className="space-y-2">
+            <div className="flex items-center gap-2 border-b pb-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+                <Shield className="h-4 w-4 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground">
+                Afiliación Clínica
+              </h3>
+            </div>
+            <div className="text-sm space-y-1">
+              <div className="flex items-center justify-between">
+                <p className="font-medium">Aseguradora</p>
+                <p className="text-muted-foreground">
+                  {patient.insurer?.name || "Sin Aseguradora"}
+                </p>
+              </div>
+              {patient.insurer && !patient.insurer.isPrivate && (
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{
-                        backgroundColor:
-                          patient.treatingDoctor.colorCode || "gray",
-                      }}
-                    />
-                    <p className="font-medium">Médico Tratante</p>
-                  </div>
-                  <p className="text-muted-foreground">
-                    Dr. {patient.treatingDoctor.firstName}{" "}
-                    {patient.treatingDoctor.lastName}
-                  </p>
+                  <p className="font-medium">Afiliación</p>
+                  <Badge
+                    className={patientTypeColors[patient.type]}
+                    variant="outline"
+                  >
+                    {patientTypeLabels[patient.type] || patient.type}
+                  </Badge>
                 </div>
               )}
             </div>
-          </div>
+          </section>
         </div>
 
         <SheetFooter className="flex-col gap-2 sm:flex-col">

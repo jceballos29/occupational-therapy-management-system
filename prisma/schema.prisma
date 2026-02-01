@@ -140,8 +140,8 @@ model Patient {
   insurerId String
   insurer   Insurer     @relation(fields: [insurerId], references: [id])
 
-  treatingDoctorId String?
-  treatingDoctor   Doctor? @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id])
+  treatingDoctorId String
+  treatingDoctor   Doctor @relation("TreatingDoctor", fields: [treatingDoctorId], references: [id])
 
   appointments   Appointment[]
   authorizations Authorization[] // Un paciente puede tener varios paquetes de sesiones

@@ -35,7 +35,7 @@ export async function createPatient(data: PatientFormValues) {
         ...rest,
         documentId,
         insurerId, // ✅ Siempre existe
-        treatingDoctorId: treatingDoctorId || null,
+        treatingDoctorId, // ✅ Obligatorio en el schema
       },
     });
   } catch (error) {
@@ -105,7 +105,7 @@ export async function updatePatient(id: string, data: PatientFormValues) {
           ...rest,
           documentId,
           insurerId,
-          treatingDoctorId: treatingDoctorId || null,
+          treatingDoctorId, // ✅ Obligatorio en el schema
         },
       });
     });

@@ -1,4 +1,4 @@
-import { ArrowLeft, LucideIcon } from "lucide-react";
+import { ArrowLeft, LucideIcon, SquareUser } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ReactNode } from "react";
@@ -20,9 +20,11 @@ export function HeaderPage({
 }: HeaderPageProps) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
+      <div className="flex items-center gap-2">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-rose-200">
+          {Icon && <Icon className="h-4 w-4 text-rose-600" />}
+        </div>
         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          {Icon && <Icon className="h-6 w-6 text-muted-foreground" />}
           {title}
         </h1>
       </div>

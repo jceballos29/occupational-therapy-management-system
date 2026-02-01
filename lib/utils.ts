@@ -27,3 +27,9 @@ export function formatCOP(value: number | string | null | undefined): string {
     maximumFractionDigits: 0,
   }).format(numValue);
 }
+
+export function extractTime(date: Date) {
+    const hours = String(date.getUTCHours()).padStart(2, "0");
+    const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+    return `${hours}:${minutes}`;
+}

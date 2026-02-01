@@ -17,20 +17,35 @@ import {
 
 interface AuthorizationsTableWrapperProps {
   authorizations: Authorization[];
+  insurerName: string;
 }
 
 // Hook que retorna filtros y tabla por separado
 export function useAuthorizationsTable({
   authorizations,
+  insurerName,
 }: AuthorizationsTableWrapperProps) {
-  const columns = useMemo(() => getAuthorizationColumns(), []);
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "validUntil", desc: false }, // Ordenar por fecha de vencimiento
-  ]);
+  // Ordenar autorizaciones: ACTIVAS primero, luego por validFrom desc
+  const sortedAuthorizations = useMemo(() => {
+    return [...authorizations].sort((a, b) => {
+      // Primero: ACTIVE > otros estados
+      if (a.status === "ACTIVE" && b.status !== "ACTIVE") return -1;
+      if (a.status !== "ACTIVE" && b.status === "ACTIVE") return 1;
+
+      // Segundo: fecha de inicio más reciente
+      return new Date(b.validFrom).getTime() - new Date(a.validFrom).getTime();
+    });
+  }, [authorizations]);
+
+  const columns = useMemo(
+    () => getAuthorizationColumns(insurerName),
+    [insurerName],
+  );
+  const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
   const table = useReactTable({
-    data: authorizations,
+    data: sortedAuthorizations,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -43,13 +58,15 @@ export function useAuthorizationsTable({
       columnFilters,
     },
     initialState: {
-      pagination: { pageSize: 5 },
+      pagination: { pageSize: 10 },
     },
   });
 
   return {
     filters: <AuthorizationFilters table={table} />,
-    table: <AuthorizationsDataTable columns={columns} data={authorizations} />,
+    table: (
+      <AuthorizationsDataTable columns={columns} data={sortedAuthorizations} />
+    ),
   };
 }
 

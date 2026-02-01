@@ -14,11 +14,15 @@ import {
   ColumnFiltersState,
   SortingState,
 } from "@tanstack/react-table";
+import { Doctor } from "@/lib/generated/prisma/browser";
+import { SerializedTariff } from "@/types/patient";
 
 interface AppointmentsTableWrapperProps {
   appointments: AppointmentWithDoctor[];
-  doctors: { id: string; firstName: string; lastName: string }[];
+  doctors: Doctor[];
   patientType: PatientType;
+  tariffs: SerializedTariff[];
+  treatingDoctor: Doctor;
 }
 
 // Hook que retorna filtros y tabla por separado
@@ -26,10 +30,12 @@ export function useAppointmentsTable({
   appointments,
   doctors,
   patientType,
+  tariffs,
+  treatingDoctor,
 }: AppointmentsTableWrapperProps) {
   const columns = useMemo(
-    () => getColumns(doctors, patientType),
-    [doctors, patientType],
+    () => getColumns(doctors, patientType, tariffs, treatingDoctor),
+    [doctors, patientType, tariffs, treatingDoctor],
   );
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);

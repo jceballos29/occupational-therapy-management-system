@@ -2,7 +2,7 @@ packages:
   - .
 
 onlyBuiltDependencies:
-  - '@prisma/engines'
+  - '@prisma/engines@7.3.0'
   - esbuild
   - msw
   - prisma

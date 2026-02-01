@@ -34,16 +34,9 @@ export const patientFormSchema = z.object({
     message: "La fecha de nacimiento es requerida",
   }),
 
-  gender: z.enum(
-    [
-      Gender.MALE,
-      Gender.FEMALE,
-      Gender.OTHER,
-    ],
-    {
-      message: "Selecciona un género",
-    },
-  ),
+  gender: z.enum([Gender.MALE, Gender.FEMALE, Gender.OTHER], {
+    message: "Selecciona un género",
+  }),
 
   type: z.enum(
     [
@@ -57,8 +50,8 @@ export const patientFormSchema = z.object({
   ),
 
   // Relaciones - insurerId ahora es obligatorio
-  insurerId: z.string({ error: "La aseguradora es requerida" }),
-  treatingDoctorId: z.string().optional(),
+  insurerId: z.string({ message: "La aseguradora es requerida" }),
+  treatingDoctorId: z.string({ message: "El médico tratante es requerido" }),
 });
 
 export type PatientFormValues = z.infer<typeof patientFormSchema>;

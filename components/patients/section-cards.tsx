@@ -1,11 +1,12 @@
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
+  CardTitle,
 } from "@/components/ui/card";
 import { Authorization } from "@/lib/generated/prisma/browser";
-import { formatCOP } from "@/lib/utils";
+import { cn, formatCOP } from "@/lib/utils";
 
 export interface SectionCardsProps {
   isPrivate: boolean;
@@ -25,52 +26,62 @@ export function SectionCards({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
       <Card
-        className={
-          isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""
-        }
+        className={cn(
+          "shadow-xs rounded-lg p-4 gap-0 justify-between h-auto",
+          isPrivate ? "bg-muted text-muted-foreground" : "",
+        )}
       >
-        <CardHeader>
+        <CardHeader className="p-0 ">
           <CardDescription className="font-medium text-xs">
             Sesiones Disponibles
           </CardDescription>
-          <CardTitle className="text-xl font-semibold tabular-nums text-right">
+        </CardHeader>
+        <CardContent className="p-0">
+          <CardTitle className="text-xl font-semibold tabular-nums text-right pb-0 m-0">
             {isPrivate ? "---" : sessionsLeft}
           </CardTitle>
-        </CardHeader>
+        </CardContent>
       </Card>
       <Card
-        className={
-          isPrivate ? "shadow-none bg-muted text-muted-foreground" : ""
-        }
+        className={cn(
+          "shadow-xs rounded-lg p-4 gap-0 justify-between h-auto",
+          isPrivate ? "bg-muted text-muted-foreground" : "",
+        )}
       >
-        <CardHeader>
+        <CardHeader className="p-0">
           <CardDescription className="font-medium text-xs">
             Autorización Activa
           </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
           <CardTitle className="text-xl font-semibold tabular-nums text-right">
             {activeAuth ? activeAuth.code : "---"}
           </CardTitle>
-        </CardHeader>
+        </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
+      <Card className="shadow-xs rounded-lg p-4 gap-0 justify-between h-auto">
+        <CardHeader className="p-0">
           <CardDescription className="font-medium text-xs">
             Sesiones Asistidas
           </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
           <CardTitle className="text-xl font-semibold tabular-nums text-right">
             {totalAssisted}
           </CardTitle>
-        </CardHeader>
+        </CardContent>
       </Card>
-      <Card>
-        <CardHeader>
+      <Card className="shadow-xs rounded-lg p-4 gap-0 justify-between h-auto">
+        <CardHeader className="p-0">
           <CardDescription className="font-medium text-xs">
             Valor Total
           </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
           <CardTitle className="text-xl font-semibold tabular-nums text-right">
             {formatCOP(totalPaid)}
           </CardTitle>
-        </CardHeader>
+        </CardContent>
       </Card>
     </div>
   );

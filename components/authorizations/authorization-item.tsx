@@ -25,9 +25,13 @@ import {
 
 interface AuthorizationItemProps {
   auth: Authorization;
+  insurerName: string;
 }
 
-export function AuthorizationItem({ auth }: AuthorizationItemProps) {
+export function AuthorizationItem({
+  auth,
+  insurerName,
+}: AuthorizationItemProps) {
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   // Función para manejar cambio de estado rápido
@@ -35,7 +39,7 @@ export function AuthorizationItem({ auth }: AuthorizationItemProps) {
     const result = await updateAuthorizationStatus(
       auth.id,
       newStatus,
-      auth.patientId
+      auth.patientId,
     );
     if (result.success) {
       toast.success(`Autorización marcada como ${newStatus}`);
@@ -140,6 +144,7 @@ export function AuthorizationItem({ auth }: AuthorizationItemProps) {
       {/* Modal de Edición (Oculto hasta que se active) */}
       <EditAuthorizationDialog
         authorization={auth}
+        insurerName={insurerName}
         open={showEditDialog}
         onOpenChange={setShowEditDialog}
       />

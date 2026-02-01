@@ -1,15 +1,14 @@
 import { HeaderPage } from "@/components/header-page";
 import { EditPatientModal } from "@/components/patients/edit-patient-modal";
 import { PatientBreadcrumb } from "@/components/patients/patient-breadcrumb";
-import { PatientInfoSheet } from "@/components/patients/patient-info-sheet";
 import { SectionAppointments } from "@/components/patients/section-appointments";
 import { SectionAuthorizations } from "@/components/patients/section-authorizations";
 import { SectionCards } from "@/components/patients/section-cards";
-import { Separator } from "@/components/ui/separator";
+import { SectionInformation } from "@/components/patients/section-information";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import prisma from "@/lib/prisma";
 import { getPatientById } from "@/lib/queries/patients";
-import { Calendar1, File, User } from "lucide-react";
+import { Calendar1, File, FileUser, User } from "lucide-react";
 import { notFound } from "next/navigation";
 
 interface PageProps {
@@ -17,7 +16,6 @@ interface PageProps {
 }
 
 export default async function PatientProfilePage({ params }: PageProps) {
-  // En Next.js 15+ params es una promesa, hay que esperarla
   const { id } = await params;
   const { data, success } = await getPatientById(id);
 
@@ -61,13 +59,11 @@ export default async function PatientProfilePage({ params }: PageProps) {
         title={`${patient.firstName} ${patient.lastName}`}
         icon={User}
         actions={
-          <>
-            <PatientInfoSheet
-              patient={patient}
-              insurers={insurers}
-              doctors={doctors}
-            />
-          </>
+          <EditPatientModal
+            patient={patient}
+            insurers={insurers}
+            doctors={doctors}
+          />
         }
       />
 
@@ -78,20 +74,30 @@ export default async function PatientProfilePage({ params }: PageProps) {
         totalAssisted={totalAssisted}
         totalPaid={totalPaid}
       />
-      <Separator />
-      <Tabs defaultValue={isPrivate ? "appointments" : "authorizations"}>
-        <TabsList>
+      <Tabs defaultValue="info">
+        <TabsList variant="line">
+          <TabsTrigger value="info">
+            <FileUser className="h-5 w-5 text-muted-foreground" />
+            Información del paciente
+          </TabsTrigger>
           {!isPrivate && (
             <TabsTrigger value="authorizations">
               <File className="h-5 w-5 text-muted-foreground" />
-              Autorizaciones
+              Historial de autorizaciones
             </TabsTrigger>
           )}
           <TabsTrigger value="appointments">
             <Calendar1 className="h-5 w-5 text-muted-foreground" />
-            Sesiones
+            Historial de sesiones
           </TabsTrigger>
         </TabsList>
+        <TabsContent value="info">
+          <SectionInformation
+            patient={patient}
+            insurers={insurers}
+            doctors={doctors}
+          />
+        </TabsContent>
         <TabsContent value="authorizations">
           <SectionAuthorizations
             isPrivate={isPrivate}

@@ -23,6 +23,7 @@ export function SectionAuthorizations({
 
   const { filters, table } = useAuthorizationsTable({
     authorizations: patient.authorizations,
+    insurerName: patient.insurer?.name || "",
   });
 
   if (isPrivate) {

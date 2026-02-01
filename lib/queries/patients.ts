@@ -38,7 +38,7 @@ export async function getPatientById(id: string) {
         },
         treatingDoctor: true,
         authorizations: {
-          orderBy: { createdAt: "desc" },
+          orderBy: { validFrom: "desc" },
         },
         appointments: {
           orderBy: { startTime: "desc" },

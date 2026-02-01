@@ -2,14 +2,14 @@
 
 import { Button } from "@/components/ui/button";
 import {
-	Dialog,
-	DialogClose,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogTitle,
-	DialogTrigger,
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { createPatient } from "@/lib/actions/patients";
 import { Doctor, Insurer } from "@/lib/generated/prisma/browser";
@@ -20,12 +20,12 @@ import { toast } from "sonner";
 import { ScrollArea } from "../ui/scroll-area";
 import { PatientForm } from "./patient-form";
 
-interface AddPatientDialogProps {
+interface AddPatientModalProps {
   insurers: Insurer[];
   doctors: Doctor[];
 }
 
-export function AddPatientDialog({ insurers, doctors }: AddPatientDialogProps) {
+export function AddPatientModal({ insurers, doctors }: AddPatientModalProps) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 

@@ -1,29 +1,5 @@
 "use client";
 
-import { ColumnDef } from "@tanstack/react-table";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-import {
-  MoreHorizontal,
-  CheckCircle,
-  XCircle,
-  Clock,
-  CalendarClock,
-  Edit,
-  Trash2,
-  AlertTriangle,
-  ArrowUpDown,
-} from "lucide-react";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,11 +10,16 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-  updateAppointmentStatus,
-  deleteAppointment,
-} from "@/lib/actions/appointments";
-import { toast } from "sonner";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   APPOINTMENT_TYPES_MAP,
   appointmentTypeColors,
@@ -46,13 +27,32 @@ import {
   statusStyles,
 } from "@/config/constants"; // <--- IMPORTANTE
 import {
+  deleteAppointment,
+  updateAppointmentStatus,
+} from "@/lib/actions/appointments";
+import {
   Appointment,
   AppointmentStatus,
-  AppointmentType,
   Doctor,
   PatientType,
 } from "@/lib/generated/prisma/browser";
+import { SerializedTariff } from "@/types/patient";
+import { ColumnDef } from "@tanstack/react-table";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import {
+  AlertTriangle,
+  ArrowUpDown,
+  CalendarClock,
+  CheckCircle,
+  Clock,
+  Edit,
+  MoreHorizontal,
+  Trash2,
+  XCircle,
+} from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
 import { EditAppointmentModal } from "./edit-appointment-modal";
 
 // Tipo serializado para componentes cliente (convierte Decimal a number)
@@ -71,10 +71,14 @@ function ActionsCell({
   appointment,
   doctors,
   patientType,
+  tariffs,
+  treatingDoctor,
 }: {
   appointment: AppointmentWithDoctor;
-  doctors: { id: string; firstName: string; lastName: string }[];
+  doctors: Doctor[];
+  tariffs: SerializedTariff[];
   patientType: PatientType;
+  treatingDoctor: Doctor;
 }) {
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -165,18 +169,11 @@ function ActionsCell({
       </DropdownMenu>
 
       <EditAppointmentModal
-        appointment={{
-          id: appointment.id,
-          patientId: appointment.patientId,
-          doctorId: appointment.doctorId,
-          startTime: appointment.startTime,
-          type: appointment.type as AppointmentType,
-          priceTotal: appointment.priceTotal,
-          priceCopay: appointment.priceCopay,
-          notes: appointment.notes,
-        }}
+        appointment={appointment}
         patientType={patientType}
+        tariffs={tariffs}
         doctors={doctors}
+        treatingDoctor={treatingDoctor}
         open={editOpen}
         onOpenChange={setEditOpen}
       />
@@ -209,8 +206,10 @@ function ActionsCell({
 }
 
 export function getColumns(
-  doctors: { id: string; firstName: string; lastName: string }[],
+  doctors: Doctor[],
   patientType: PatientType,
+  tariffs: SerializedTariff[],
+  treatingDoctor: Doctor,
 ): ColumnDef<AppointmentWithDoctor>[] {
   return [
     {
@@ -255,22 +254,6 @@ export function getColumns(
           <span className="text-sm text-muted-foreground">
             {startHours}:{startMinutes} - {endHours}:{endMinutes}
           </span>
-        );
-      },
-    },
-    {
-      accessorKey: "doctor",
-      header: "Profesional",
-      cell: ({ row }) => {
-        const doctor = row.original.doctor;
-        return (
-          <div className="flex items-center gap-2">
-            <div
-              className="w-4 h-4 rounded-full"
-              style={{ backgroundColor: doctor.colorCode || "gray" }}
-            />
-            <span className="text-sm">Dr. {doctor.lastName}</span>
-          </div>
         );
       },
     },
@@ -332,6 +315,8 @@ export function getColumns(
           appointment={row.original}
           doctors={doctors}
           patientType={patientType}
+          tariffs={tariffs}
+          treatingDoctor={row.original.doctor}
         />
       ),
     },

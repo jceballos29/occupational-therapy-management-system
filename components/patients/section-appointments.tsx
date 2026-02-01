@@ -6,10 +6,11 @@ import { useAppointmentsTable } from "../appointments/appointments-table-wrapper
 import { Calendar } from "lucide-react";
 import { useMounted } from "@/hooks/use-mounted";
 import { TableSkeleton } from "@/components/table-skeleton";
+import { Doctor } from "@/lib/generated/prisma/browser";
 
 export interface SectionAppointmentsProps {
   patient: PatientWithFullRelations;
-  doctors: DoctorListItem[];
+  doctors: Doctor[];
   sessionsLeft?: number; // Sesiones disponibles en la autorización activa
   isPrivate: boolean; // Si es paciente privado
 }
@@ -26,6 +27,8 @@ export function SectionAppointments({
     appointments: patient.appointments,
     doctors,
     patientType: patient.type,
+    tariffs: patient.insurer?.tariffs || [],
+    treatingDoctor: patient.treatingDoctor,
   });
 
   const canCreateAppointment = isPrivate || sessionsLeft > 0;
@@ -38,20 +41,21 @@ export function SectionAppointments({
   // Evitar errores de hidratación
   if (!mounted) {
     return (
-      <div className="space-y-4 pt-4">
+      <section className="space-y-4 pt-4">
         <TableSkeleton />
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="space-y-4 pt-4">
+    <section className="space-y-4 pt-4">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         {filters}
         <AddAppointmentModal
           patientId={patient.id}
           patientType={patient.type}
           doctors={doctors}
+          treatingDoctor={patient.treatingDoctor}
           tariffs={patient.insurer?.tariffs || []}
           disabled={!canCreateAppointment}
           disabledReason={disabledReason}
@@ -59,6 +63,6 @@ export function SectionAppointments({
       </div>
 
       {table}
-    </div>
+    </section>
   );
 }

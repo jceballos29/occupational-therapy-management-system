@@ -560,7 +560,7 @@ export function PatientForm({
     <form
       id={formId}
       onSubmit={form.handleSubmit(onSubmit)}
-      className="space-y-6 px-6 pb-6"
+      className="px-6 pb-6"
     >
       <FieldGroup>
         <section className="space-y-4">
@@ -584,6 +584,7 @@ export function PatientForm({
                     disabled={isPending}
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
+                    placeholder="Pepito"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -604,6 +605,7 @@ export function PatientForm({
                     disabled={isPending}
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
+                    placeholder="Perez"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -660,6 +662,7 @@ export function PatientForm({
                     disabled={isPending}
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
+                    placeholder="12345678"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -748,7 +751,6 @@ export function PatientForm({
             />
           </div>
         </section>
-
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sky-200">
@@ -769,6 +771,7 @@ export function PatientForm({
                     disabled={isPending}
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
+                    placeholder="12345678"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -781,13 +784,14 @@ export function PatientForm({
               name="email"
               render={({ field, fieldState }) => (
                 <Field data-invalid={fieldState.invalid}>
-                  <FieldLabel>Email</FieldLabel>
+                  <FieldLabel className="flex items-center justify-between">Email <span className="text-muted-foreground text-xs">(Opcional)</span></FieldLabel>
                   <Input
                     {...field}
                     id={field.name}
                     disabled={isPending}
                     aria-invalid={fieldState.invalid}
                     autoComplete="off"
+                    placeholder="pepito@gmail.com"
                   />
                   {fieldState.invalid && (
                     <FieldError errors={[fieldState.error]} />
@@ -797,19 +801,19 @@ export function PatientForm({
             />
           </div>
         </section>
-
         <section className="space-y-4">
           <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-emerald-200">
-              <Stethoscope className="h-4 w-4 text-emerald-600" />
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
+              <Shield className="h-4 w-4 text-primary" />
             </div>
-            <h3 className="font-semibold text-foreground">Médico tratante</h3>
+            <h3 className="font-semibold text-foreground">Datos administrativos</h3>
           </div>
           <Controller
             control={form.control}
             name="treatingDoctorId"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>Médico tratante</FieldLabel>
                 <Select
                   name={field.name}
                   onValueChange={field.onChange}
@@ -843,6 +847,13 @@ export function PatientForm({
                                 ?.lastName
                             }
                           </span>
+                          |
+                          <span className="ml-auto text-xs text-muted-foreground">
+                            {
+                              doctors.find((d) => d.id === field.value)
+                                ?.speciality
+                            }
+                          </span>
                         </div>
                       )}
                     </SelectValue>
@@ -851,7 +862,7 @@ export function PatientForm({
                     {doctors.map((doctor) => (
                       <SelectItem key={doctor.id} value={doctor.id}>
                         <div className="flex flex-col">
-                          <div className="flex items-center gap-2">
+                          <div className="w-full flex items-center gap-2">
                             <div
                               className="w-4 h-4 rounded-full"
                               style={{
@@ -860,11 +871,12 @@ export function PatientForm({
                             />
                             <span className="font-medium">
                               Dr. {doctor.firstName} {doctor.lastName}
+                            </span>{" "}
+                            |
+                            <span className="text-xs text-muted-foreground">
+                              {doctor.speciality}
                             </span>
                           </div>
-                          <span className="text-xs text-muted-foreground">
-                            Terapeuta de Ocupación
-                          </span>
                         </div>
                       </SelectItem>
                     ))}
@@ -876,19 +888,12 @@ export function PatientForm({
               </Field>
             )}
           />
-        </section>
-        <section className="space-y-4">
-          <div className="flex items-center gap-2 border-b pb-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary/10">
-              <Shield className="h-4 w-4 text-primary" />
-            </div>
-            <h3 className="font-semibold text-foreground">Aseguradora</h3>
-          </div>
           <Controller
             control={form.control}
             name="insurerId"
             render={({ field, fieldState }) => (
               <Field data-invalid={fieldState.invalid}>
+                <FieldLabel>Aseguradora</FieldLabel>
                 <Select
                   name={field.name}
                   onValueChange={field.onChange}
@@ -934,19 +939,7 @@ export function PatientForm({
               </Field>
             )}
           />
-        </section>
-
-        {/* Solo mostrar tipo de convenio si se ha seleccionado aseguradora y NO es privada */}
-        {selectedInsurerId && !isPrivateInsurer && (
-          <section className="space-y-4">
-            <div className="flex items-center gap-2 border-b pb-2">
-              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-secondary">
-                <UserCog className="h-4 w-4 text-secondary-foreground" />
-              </div>
-              <h3 className="font-semibold text-foreground">
-                Tipo de convenio
-              </h3>
-            </div>
+          {selectedInsurerId && !isPrivateInsurer && (
             <Controller
               control={form.control}
               name="type"
@@ -954,20 +947,18 @@ export function PatientForm({
                 const isInvalid = fieldState.invalid;
                 return (
                   <FieldSet data-invalid={isInvalid}>
+                    <FieldLabel>Tipo de convenio</FieldLabel>
                     <RadioGroup
                       name={field.name}
                       value={field.value}
                       onValueChange={field.onChange}
                       aria-invalid={isInvalid}
+                      className="grid grid-cols-2 gap-2"
                     >
                       <FieldLabel htmlFor={field.name}>
                         <Field orientation="horizontal">
                           <FieldContent>
                             <FieldTitle>Copago</FieldTitle>
-                            <FieldDescription>
-                              El paciente paga el copago de la sesión y el resto
-                              se paga a la empresa de salud
-                            </FieldDescription>
                           </FieldContent>
                           <RadioGroupItem
                             value={PatientType.INSURANCE_COPAY}
@@ -979,10 +970,6 @@ export function PatientForm({
                         <Field orientation="horizontal">
                           <FieldContent>
                             <FieldTitle>Paquete</FieldTitle>
-                            <FieldDescription>
-                              La empresa de salud paga la totalidad del paquete
-                              de sesiones
-                            </FieldDescription>
                           </FieldContent>
                           <RadioGroupItem
                             value={PatientType.INSURANCE_PACKAGE}
@@ -996,8 +983,8 @@ export function PatientForm({
                 );
               }}
             />
-          </section>
-        )}
+          )}
+        </section>
       </FieldGroup>
     </form>
   );

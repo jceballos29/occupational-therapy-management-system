@@ -24,7 +24,7 @@ export type DoctorListItem = Pick<Doctor, "id" | "firstName" | "lastName">;
 
 export type PatientWithRelations = Patient & {
   insurer: Insurer;
-  treatingDoctor: Doctor | null;
+  treatingDoctor: Doctor;
 };
 
 /**
@@ -80,7 +80,7 @@ export type PatientWithFullRelations = Omit<Patient, "appointments"> & {
     name: string;
     tariffs?: SerializedTariff[];
   };
-  treatingDoctor: Doctor | null;
+  treatingDoctor: Doctor;
   authorizations: Authorization[];
   appointments: SerializedAppointment[];
 };

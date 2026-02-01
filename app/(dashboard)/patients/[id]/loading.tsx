@@ -25,8 +25,6 @@ export default function PatientProfileSkeleton() {
         ))}
       </div>
 
-      <Separator />
-
       {/* Tabs Skeleton */}
       <div className="space-y-4">
         <div className="flex gap-2">

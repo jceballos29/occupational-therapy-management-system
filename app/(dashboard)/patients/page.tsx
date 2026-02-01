@@ -2,7 +2,7 @@ import { DataTable } from "@/components/data-table";
 import { getPatients } from "@/lib/queries/patients";
 import { Users } from "lucide-react";
 import { columns } from "./columns";
-import { AddPatientDialog } from "@/components/patients/add-patient-dialog";
+import { AddPatientModal } from "@/components/patients/add-patient-modal";
 import prisma from "@/lib/prisma";
 
 export default async function PatientsPage() {
@@ -34,7 +34,7 @@ export default async function PatientsPage() {
             clínicas.
           </p>
         </div>
-        <AddPatientDialog insurers={insurers} doctors={doctors} />
+        <AddPatientModal insurers={insurers} doctors={doctors} />
       </div>
 
       {/* Tabla de Datos */}
